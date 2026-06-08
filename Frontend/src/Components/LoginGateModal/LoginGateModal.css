@@ -1,0 +1,137 @@
+.lgm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: lgm-fade-in 0.18s ease;
+}
+
+@keyframes lgm-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.lgm-modal {
+  background: #1a1a1a;
+  border: 1px solid #2e2e2e;
+  border-radius: 14px;
+  padding: 36px 28px 28px;
+  max-width: 308px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  animation: lgm-slide-up 0.22s ease;
+}
+
+@keyframes lgm-slide-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Close ── */
+.lgm-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: transparent;
+  border: none;
+  color: #444;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--ease);
+}
+
+.lgm-close:hover { color: var(--brand-gold); }
+
+/* ── Icon ── */
+.lgm-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #222;
+  border: 1px solid #2e2e2e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+}
+
+/* ── Copy ── */
+.lgm-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 500;
+  color: #fff;
+  margin-bottom: 10px;
+  letter-spacing: 0.3px;
+}
+
+.lgm-body {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.75;
+  margin-bottom: 24px;
+}
+
+.lgm-body strong {
+  color: #aaa;
+  font-weight: 500;
+}
+
+/* ── Actions ── */
+.lgm-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lgm-btn {
+  width: 100%;
+  padding: 11px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+  transition: all var(--ease);
+  cursor: pointer;
+}
+
+.lgm-btn--primary {
+  background: var(--brand-gold);
+  color: var(--brand-dark);
+  border: 1px solid var(--brand-gold);
+}
+
+.lgm-btn--primary:hover {
+  background: var(--brand-gold-dk);
+  border-color: var(--brand-gold-dk);
+}
+
+.lgm-btn--ghost {
+  background: transparent;
+  color: #777;
+  border: 1px solid #2e2e2e;
+}
+
+.lgm-btn--ghost:hover {
+  border-color: #444;
+  color: #aaa;
+}
+
+.lgm-btn--text {
+  background: transparent;
+  color: #444;
+  border: none;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+}
+
+.lgm-btn--text:hover { color: #777; }

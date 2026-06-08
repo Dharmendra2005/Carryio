@@ -1,0 +1,75 @@
+.auth-register-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.auth-strength-bars {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.auth-strength-bar {
+  height: 4px;
+  border-radius: 4px;
+  background: #ede6e1;
+}
+
+.auth-strength-bar.is-weak {
+  background: #d65850;
+}
+
+.auth-strength-bar.is-fair {
+  background: #bf7d1f;
+}
+
+.auth-strength-bar.is-good {
+  background: #d89a2f;
+}
+
+.auth-strength-bar.is-strong {
+  background: #3b6d11;
+}
+
+.auth-strength-label {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #8b8078;
+}
+
+.auth-strength-label.is-weak {
+  color: #d65850;
+}
+
+.auth-strength-label.is-fair {
+  color: #bf7d1f;
+}
+
+.auth-strength-label.is-good {
+  color: #9b7a2c;
+}
+
+.auth-strength-label.is-strong {
+  color: #3b6d11;
+}
+
+.auth-terms {
+  align-items: flex-start;
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 2px 0 12px;
+}
+
+.auth-error {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #d65850;
+}
+
+@media (max-width: 520px) {
+  .auth-register-grid {
+    grid-template-columns: 1fr;
+  }
+}

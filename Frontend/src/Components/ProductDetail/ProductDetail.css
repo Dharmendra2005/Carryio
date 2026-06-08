@@ -1,0 +1,132 @@
+.product-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  gap: 24px;
+  align-items: start;
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.product-purchase {
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: 16px;
+  padding: 18px;
+  background: #fff;
+}
+
+.product-summary {
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.product-specs,
+.product-options,
+.product-reviews {
+  display: grid;
+  gap: 10px;
+}
+
+.product-specs {
+  margin-bottom: 16px;
+}
+
+.product-spec {
+  display: grid;
+  gap: 3px;
+  padding: 10px 0;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+}
+
+.product-spec span,
+.product-options span,
+.product-reviews__top span:last-child,
+.product-review span {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.product-spec strong,
+.product-options strong {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.product-options {
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 16px;
+}
+
+.product-options div {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+}
+
+.product-continue {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 18px;
+  text-decoration: none;
+}
+
+.product-reviews {
+  padding-top: 16px;
+  border-top: 0.5px solid var(--color-border-tertiary);
+}
+
+.product-reviews__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 2px;
+}
+
+.product-review {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  background: #fbf7f4;
+  border: 0.5px solid var(--color-border-tertiary);
+}
+
+.product-review div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.product-review strong {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.product-review p {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+@media (max-width: 900px) {
+  .product-detail {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .product-options {
+    grid-template-columns: 1fr;
+  }
+
+  .product-reviews__top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

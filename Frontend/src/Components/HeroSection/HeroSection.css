@@ -1,0 +1,145 @@
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 52px 28px 44px;
+  background: var(--brand-dark);
+  border-bottom: 1px solid var(--border-md);
+}
+
+/* ── Eyebrow ── */
+.hero__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.hero__eyebrow-line {
+  display: block;
+  width: 28px;
+  height: 1px;
+  background: var(--brand-gold);
+  flex-shrink: 0;
+}
+
+.hero__eyebrow-text {
+  font-size: 10px;
+  color: var(--brand-gold);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+/* ── Heading ── */
+.hero__heading {
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 500;
+  color: #ffffff;
+  line-height: 1.22;
+  max-width: 340px;
+  letter-spacing: -0.5px;
+}
+
+.hero__heading em {
+  color: var(--brand-gold);
+  font-style: italic;
+}
+
+/* ── Sub ── */
+.hero__sub {
+  font-size: 13px;
+  color: #888;
+  margin: 14px 0 26px;
+  max-width: 300px;
+  line-height: 1.75;
+  letter-spacing: 0.2px;
+}
+
+/* ── Actions ── */
+.hero__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hero__btn {
+  padding: 11px 24px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  transition: all var(--ease);
+}
+
+.hero__btn--primary {
+  background: var(--brand-gold);
+  color: var(--brand-dark);
+  border: 1px solid var(--brand-gold);
+}
+
+.hero__btn--primary:hover {
+  background: var(--brand-gold-dk);
+  border-color: var(--brand-gold-dk);
+}
+
+.hero__btn--ghost {
+  background: transparent;
+  color: #ccc;
+  border: 1px solid #333;
+}
+
+.hero__btn--ghost:hover {
+  border-color: var(--brand-gold);
+  color: var(--brand-gold);
+}
+
+/* ── Stats ── */
+.hero__stats {
+  display: flex;
+  gap: 36px;
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 1px solid #2e2e2e;
+}
+
+.hero__stat-num {
+  display: block;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--brand-gold);
+  font-family: var(--font-display);
+}
+
+.hero__stat-label {
+  display: block;
+  font-size: 10px;
+  color: #555;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* ── Visual ── */
+.hero__visual {
+  width: 200px;
+  height: 170px;
+  background: #222;
+  border: 1px solid #2e2e2e;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.hero__visual-label {
+  font-size: 9px;
+  color: #444;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+}

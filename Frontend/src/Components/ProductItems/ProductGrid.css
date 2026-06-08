@@ -1,0 +1,153 @@
+/* ── Grid wrapper ── */
+.product-grid__wrapper {
+  display: block;
+}
+
+.product-grid__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.product-grid__title {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-primary);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.product-grid__view-all {
+  font-size: 12px;
+  color: var(--brand-gold-dk);
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: color var(--ease);
+}
+
+.product-grid__view-all:hover {
+  color: var(--brand-gold);
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+.product-grid__empty {
+  padding: 48px 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ── Card ── */
+.product-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-lt);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    border-color var(--ease),
+    box-shadow var(--ease),
+    transform var(--ease);
+  outline: none;
+}
+
+.product-card:hover {
+  border-color: var(--brand-gold);
+  box-shadow: 0 4px 20px rgba(201, 168, 76, 0.1);
+  transform: translateY(-2px);
+}
+
+.product-card:focus-visible {
+  outline: 2px solid var(--brand-gold);
+  outline-offset: 2px;
+}
+
+/* ── Image ── */
+.product-card__img {
+  height: 128px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--border-lt);
+  position: relative;
+}
+
+/* ── Badge ── */
+.product-card__badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 3px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.product-card__badge--new {
+  background: var(--brand-dark);
+  color: var(--brand-gold);
+}
+
+.product-card__badge--hot {
+  background: var(--brand-gold);
+  color: var(--brand-dark);
+}
+
+/* ── Body ── */
+.product-card__body {
+  padding: 12px;
+}
+
+.product-card__category {
+  display: block;
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 4px;
+}
+
+.product-card__name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Footer ── */
+.product-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.product-card__price {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand-dark);
+}
+
+.product-card__arrow {
+  font-size: 14px;
+  color: var(--brand-gold);
+}
+
+.product-card__lock {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.3px;
+}

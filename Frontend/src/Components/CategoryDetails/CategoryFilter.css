@@ -1,0 +1,47 @@
+.cat-filter { margin-bottom: 28px; }
+
+.cat-filter__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.cat-filter__title {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-primary);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.cat-filter__pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cat-filter__pill {
+  padding: 7px 18px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  color: #888;
+  cursor: pointer;
+  transition: all var(--ease);
+}
+
+.cat-filter__pill:hover:not(.cat-filter__pill--active) {
+  border-color: var(--brand-gold);
+  color: var(--brand-gold-dk);
+}
+
+.cat-filter__pill--active {
+  background: var(--brand-dark);
+  color: var(--brand-gold);
+  border-color: var(--brand-dark);
+}

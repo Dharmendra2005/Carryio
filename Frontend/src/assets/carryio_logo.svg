@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 400" width="760" height="400">
+  <rect width="760" height="400" fill="white"/>
+
+  <g fill="#B8860B">
+
+  <!-- MAIN C ARC — centered vertically in 400px canvas, scaled to fit -->
+  <path d="
+    M 228 30
+    C 196 16 162 14 134 26
+    C 90 42 58 76 42 116
+    C 24 158 24 208 44 250
+    C 64 292 100 322 144 334
+    C 174 344 208 342 234 328
+    C 252 318 266 304 276 288
+    L 258 272
+    C 248 286 234 298 216 306
+    C 190 318 160 318 138 306
+    C 102 290 76 258 64 220
+    C 52 180 54 136 72 100
+    C 90 64 120 42 154 32
+    C 180 24 210 32 228 50
+    L 242 28
+    Z
+  "/>
+
+  <!-- Top serif -->
+  <path d="M 228 30 C 236 18 250 12 262 20 C 272 28 270 42 260 48 C 250 54 238 48 234 38 L 242 28 C 236 36 228 50 228 50 C 222 40 222 26 228 30 Z"/>
+
+  <!-- Bottom serif -->
+  <path d="M 276 288 C 284 276 300 272 308 282 C 316 292 310 306 298 308 C 288 310 278 302 274 292 L 258 272 C 264 278 270 284 276 288 Z"/>
+
+  <!-- TOP SPIRAL CURL -->
+  <path d="
+    M 262 20
+    C 278 10 298 12 308 26
+    C 320 42 314 62 300 70
+    C 286 78 268 72 262 58
+    C 256 44 264 28 278 26
+    C 290 22 302 30 302 42
+    C 302 52 294 60 282 60
+    C 272 60 266 52 268 44
+    C 270 37 278 34 284 38
+  " fill="none" stroke="#B8860B" stroke-width="8" stroke-linecap="round"/>
+
+  <!-- TOP FLORAL STEM -->
+  <path d="M 158 38 C 156 48 154 60 158 72 C 160 80 163 88 162 96"
+        fill="none" stroke="#B8860B" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Large leaf -->
+  <path d="M 156 54 C 142 46 128 50 126 62 C 124 76 138 84 150 78 C 160 72 160 62 156 54 Z"/>
+
+  <!-- Small upper leaf -->
+  <path d="M 160 40 C 154 30 142 32 141 44 C 140 54 152 58 160 52 C 164 49 163 43 160 40 Z"/>
+
+  <!-- Berries -->
+  <circle cx="170" cy="32" r="5.5"/>
+  <circle cx="182" cy="26" r="4"/>
+  <circle cx="192" cy="22" r="2.8"/>
+
+  <!-- BOTTOM SWOOSH -->
+  <path d="M 146 334 C 170 346 198 352 222 346 C 244 340 260 328 272 314"
+        fill="none" stroke="#B8860B" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- BOTTOM SWIRL -->
+  <path d="
+    M 272 314
+    C 284 322 290 338 282 350
+    C 274 362 256 362 246 350
+    C 236 338 238 322 250 314
+    C 262 306 276 312 276 324
+    C 276 334 266 342 256 340
+    C 248 338 242 330 246 322
+    C 248 316 256 314 262 318
+  " fill="none" stroke="#B8860B" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- Bottom left leaf -->
+  <path d="M 152 336 C 140 348 134 364 146 370 C 158 376 170 366 166 352 C 164 342 158 335 152 336 Z"/>
+
+  <!-- Bottom berries -->
+  <circle cx="176" cy="348" r="4"/>
+  <circle cx="188" cy="352" r="3"/>
+  <circle cx="199" cy="354" r="2.2"/>
+
+  </g>
+
+  <!-- ══════════════════════════════════
+       TEXT BLOCK — inside C opening, right side
+       C spans roughly x=24 to x=310, vertically 30 to 370
+       Text block sits at x=330 onward, vertically centered ~200
+  ══════════════════════════════════ -->
+
+  <!-- SINCE 2026 — top label -->
+  <text
+    x="530" y="138"
+    text-anchor="middle"
+    font-family="'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif"
+    font-size="16"
+    fill="#B8860B"
+    letter-spacing="5"
+  >SINCE  2026</text>
+
+  <!-- Top thin line -->
+  <line x1="340" y1="150" x2="720" y2="150" stroke="#B8860B" stroke-width="0.9"/>
+
+  <!-- CARRYIO wordmark -->
+  <text
+    x="530" y="228"
+    text-anchor="middle"
+    font-family="'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif"
+    font-size="80"
+    font-weight="bold"
+    fill="#B8860B"
+    letter-spacing="6"
+  >CARRYIO</text>
+
+  <!-- Bottom thin line -->
+  <line x1="340" y1="244" x2="720" y2="244" stroke="#B8860B" stroke-width="0.9"/>
+
+  <!-- Tagline -->
+  <text
+    x="530" y="270"
+    text-anchor="middle"
+    font-family="'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif"
+    font-size="16"
+    fill="#B8860B"
+    letter-spacing="4"
+  >PREMIUM BAGS &amp; ACCESSORIES</text>
+
+</svg>
