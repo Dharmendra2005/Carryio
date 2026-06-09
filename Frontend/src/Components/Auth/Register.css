@@ -68,6 +68,14 @@
   color: #d65850;
 }
 
+.auth-admin-link {
+  display: block;
+  margin-top: 12px;
+  font-size: 11px;
+  color: #3b6d11;
+  text-decoration: none;
+}
+
 @media (max-width: 520px) {
   .auth-register-grid {
     grid-template-columns: 1fr;

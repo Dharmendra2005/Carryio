@@ -63,7 +63,7 @@ export default function LoginGateModal({ isOpen, product, onClose }) {
             className="lgm-btn lgm-btn--primary"
             onClick={() => { onClose(); navigate("/login"); }}
           >
-            Log in to Carryio
+            Go to login ↗
           </button>
           <button
             className="lgm-btn lgm-btn--ghost"

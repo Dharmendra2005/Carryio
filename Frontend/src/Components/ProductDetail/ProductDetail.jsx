@@ -31,6 +31,7 @@ export default function ProductDetail({
   isAuthenticated,
   onLogin,
   onSignup,
+  onAddToCart,
 }) {
   const title = product?.name || "Selected product";
   const category = product?.cat || "bag";
@@ -125,6 +126,14 @@ export default function ProductDetail({
                 type="button"
                 className="btn-primary"
                 style={{ width: "100%", marginBottom: 10 }}
+                onClick={() =>
+                  onAddToCart?.({
+                    ...product,
+                    name: title,
+                    cat: category,
+                    price,
+                  })
+                }
               >
                 Add to cart
               </button>

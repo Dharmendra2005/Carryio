@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./Checkout.css";
 
 const PAYMENT_METHODS = [
@@ -34,18 +34,60 @@ function formatPrice(amount) {
 
 export default function CheckoutPayment() {
   const [paymentMethod, setPaymentMethod] = useState("upi");
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const product = location.state?.product || {
     title: "Selected product",
     price: "Rs. 1,999",
   };
   const address = location.state?.address;
   const itemTotal = getPriceValue(product.price);
-  const codFee = paymentMethod === "cod" ? COD_FEE : 0;
+  const codFee = paymentMethod === "COD" ? COD_FEE : 0;
   const amountPayable = itemTotal + PLATFORM_FEE + codFee;
   const selectedMethod = PAYMENT_METHODS.find(
     (method) => method.id === paymentMethod,
   );
+
+  const handlePlaceOrder = async () => {
+    if (!address?._id) {
+      alert("Please save delivery address before placing order.");
+      return;
+    }
+
+    setIsPlacingOrder(true);
+
+    try {
+      const response = await fetch("http://localhost:3000/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          addressId: address._id,
+          product,
+          paymentMethod,
+          platformFee: PLATFORM_FEE,
+          codFee,
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.message || "Order failed");
+        return;
+      }
+
+      alert("Order placed successfully");
+      navigate("/", { replace: true });
+    } catch (err) {
+      alert("Unable to place order. Please check backend server.");
+      console.error("Error placing order:", err);
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  };
 
   return (
     <div className="main checkout-page">
@@ -89,7 +131,7 @@ export default function CheckoutPayment() {
               >
                 <span>{method.label}</span>
                 <strong>{method.detail}</strong>
-                {method.id === "cod" ? <em>+ Rs. 9 fee</em> : null}
+                {method.id === "COD" ? <em>+ Rs. 9 fee</em> : null}
               </button>
             ))}
           </div>
@@ -103,7 +145,7 @@ export default function CheckoutPayment() {
               <span>Platform fee</span>
               <strong>{formatPrice(PLATFORM_FEE)}</strong>
             </div>
-            {paymentMethod === "cod" ? (
+            {paymentMethod === "COD" ? (
               <div>
                 <span>COD fee</span>
                 <strong>{formatPrice(COD_FEE)}</strong>
@@ -115,8 +157,13 @@ export default function CheckoutPayment() {
             </div>
           </div>
 
-          <button type="button" className="btn-primary payment-final-btn">
-            Continue
+          <button
+            type="button"
+            className="btn-primary payment-final-btn"
+            onClick={handlePlaceOrder}
+            disabled={isPlacingOrder}
+          >
+            {isPlacingOrder ? "Placing order..." : "Continue"}
           </button>
         </section>
 

@@ -37,12 +37,36 @@ export default function Register({ onSwitchToLogin, onAuthSuccess }) {
     ? { product: location.state.product }
     : undefined;
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const firstName = String(formData.get("firstName") || "").trim();
     const lastName = String(formData.get("lastName") || "").trim();
     const email = String(formData.get("email") || "").trim();
+
+    const response = await fetch("http://localhost:3000/users/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        firstName,
+        lastName,
+        email,
+        password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.message || "Registration failed");
+      return;
+    }
+
+    alert("Account created successfully");
+    onSwitchToLogin();
 
     onAuthSuccess?.({
       name: `${firstName} ${lastName}`.trim() || email.split("@")[0] || "Guest",

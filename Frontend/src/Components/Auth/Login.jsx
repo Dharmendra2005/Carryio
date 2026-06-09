@@ -18,15 +18,34 @@ function UserLogin({ initialTab = "login", onAuthSuccess }) {
     ? { product: location.state.product }
     : undefined;
 
-  const handleLoginSubmit = (event) => {
+  const handleLoginSubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const email = String(formData.get("email") || "").trim();
-    const name = email.split("@")[0] || "Guest";
+    const password = String(formData.get("password") || "").trim();
+
+    const response = await fetch("http://localhost:3000/users/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.message || "Login failed");
+      return;
+    }
 
     onAuthSuccess?.({
-      name,
-      email,
+      name: `${data.user.firstName} ${data.user.lastName}`,
+      email: data.user.email,
       rememberMe,
     });
 
@@ -142,6 +161,9 @@ function UserLogin({ initialTab = "login", onAuthSuccess }) {
               By logging in, you agree to our Terms and Privacy Policy.
               <Link to="/" className="auth-home-link">
                 Back to home
+              </Link>
+              <Link to="/admin/login" className="auth-admin-link">
+                Login as admin
               </Link>
             </div>
           </div>

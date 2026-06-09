@@ -4,6 +4,7 @@ import "./App.css";
 import logo from "./assets/carryio_logo.svg";
 
 import UserLogin from "./Components/Auth/Login";
+import Cart from "./Components/Cart/Cart";
 import CheckoutAddress from "./Components/Checkout/CheckoutAddress";
 import CheckoutPayment from "./Components/Checkout/CheckoutPayment";
 import ProductDetail from "./Components/ProductDetail/ProductDetail";
@@ -94,6 +95,7 @@ const CATEGORIES = [
 ];
 
 const AUTH_STORAGE_KEY = "carryio_user";
+const CART_STORAGE_KEY = "carryio_cart";
 
 function slugify(value) {
   return value
@@ -108,6 +110,10 @@ function App() {
     const storedUser = localStorage.getItem(AUTH_STORAGE_KEY);
     return storedUser ? JSON.parse(storedUser) : null;
   });
+  const [cartItems, setCartItems] = useState(() => {
+    const storedCart = localStorage.getItem(CART_STORAGE_KEY);
+    return storedCart ? JSON.parse(storedCart) : [];
+  });
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -119,6 +125,10 @@ function App() {
       localStorage.removeItem(AUTH_STORAGE_KEY);
     }
   }, [user]);
+
+  useEffect(() => {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
+  }, [cartItems]);
 
   const filteredProducts =
     active === "all"
@@ -149,10 +159,30 @@ function App() {
     setUser(nextUser);
   };
 
-  const handleLogout = () => {
-    setUser(null);
-    setMenuOpen(false);
-    navigate("/");
+  const handleLogout = async () => {
+    const confirmLogout = window.confirm("Are you sure you want to log out?");
+
+    if (!confirmLogout) return;
+
+    try {
+      await fetch("http://localhost:3000/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      // Clear React state
+      setUser(null);
+      setCartItems([]);
+
+      // Clear localStorage
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+      localStorage.removeItem(CART_STORAGE_KEY);
+
+      // Optional: redirect
+      navigate("/");
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
   };
 
   const handleProductClick = (product) => {
@@ -160,6 +190,96 @@ function App() {
       state: { product },
     });
   };
+
+  const handleAddToCart = (product) => {
+    setCartItems((currentItems) => {
+      const existingItem = currentItems.find(
+        (item) => item.name === product.name,
+      );
+
+      if (existingItem) {
+        return currentItems.map((item) =>
+          item.name === product.name
+            ? { ...item, quantity: item.quantity + 1 }
+            : item,
+        );
+      }
+
+      return [...currentItems, { ...product, quantity: 1 }];
+    });
+
+    navigate("/cart");
+  };
+
+  // const handleAddToCart = async (product) => {
+  //   try {
+  //     const response = await fetch("http://localhost:3000/cart", {
+  //       method: "POST",
+  //       credentials: "include",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         productId: product._id, // IMPORTANT
+  //         name: product.name,
+  //         price: product.price,
+  //         quantity: 1,
+  //       }),
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error("Failed to add to cart");
+  //     }
+
+  //     setCartItems((currentItems) => {
+  //       const existingItem = currentItems.find(
+  //         (item) => item._id === product._id,
+  //       );
+
+  //       if (existingItem) {
+  //         return currentItems.map((item) =>
+  //           item._id === product._id
+  //             ? { ...item, quantity: item.quantity + 1 }
+  //             : item,
+  //         );
+  //       }
+
+  //       return [...currentItems, { ...product, quantity: 1 }];
+  //     });
+
+  //     navigate("/cart");
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // };
+
+  const increaseCartItem = (name) => {
+    setCartItems((currentItems) =>
+      currentItems.map((item) =>
+        item.name === name ? { ...item, quantity: item.quantity + 1 } : item,
+      ),
+    );
+  };
+
+  const decreaseCartItem = (name) => {
+    setCartItems((currentItems) =>
+      currentItems
+        .map((item) =>
+          item.name === name
+            ? { ...item, quantity: Math.max(item.quantity - 1, 0) }
+            : item,
+        )
+        .filter((item) => item.quantity > 0),
+    );
+  };
+
+  const removeCartItem = (name) => {
+    setCartItems((currentItems) =>
+      currentItems.filter((item) => item.name !== name),
+    );
+  };
+
+  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   const renderHeader = () => (
     <nav className="nav">
@@ -171,14 +291,18 @@ function App() {
         <input type="text" placeholder="Search bags, wallets, accessories…" />
       </div>
       <div className="nav-actions">
-        <div className="nav-cart">
+        <button
+          type="button"
+          className="nav-cart"
+          onClick={() => navigate("/cart")}
+        >
           <i
             className="ti ti-shopping-bag"
             aria-hidden="true"
             style={{ fontSize: 16 }}
           />
-          Cart (0)
-        </div>
+          Cart ({cartCount})
+        </button>
 
         {user ? (
           <>
@@ -265,16 +389,32 @@ function App() {
         <CheckoutAddress />
       ) : location.pathname === "/checkout/payment" ? (
         <CheckoutPayment />
+      ) : location.pathname === "/cart" ? (
+        <Cart
+          items={cartItems}
+          onIncrease={increaseCartItem}
+          onDecrease={decreaseCartItem}
+          onRemove={removeCartItem}
+        />
       ) : location.pathname.startsWith("/product/") ? (
         <ProductDetail
           product={activeProduct || location.state?.product || null}
           isAuthenticated={Boolean(user)}
           onLogin={() => openAuthPage("/login")}
           onSignup={() => openAuthPage("/register")}
+          onAddToCart={handleAddToCart}
         />
       ) : (
         <>
           <div className="hero">
+            <div className="hero-img">
+              {/* <i
+            className="ti ti-briefcase"
+            aria-hidden="true"
+            style={{ fontSize: 64, color: "#d44d1c" }}
+          /> */}
+              <img src={logo} alt="Carryio Logo" />
+            </div>
             <div className="hero-text">
               <h1>
                 Carry more than just <span>essentials</span>
@@ -305,14 +445,6 @@ function App() {
                   <div className="stat-label">Rating</div>
                 </div>
               </div>
-            </div>
-            <div className="hero-img">
-              {/* <i
-            className="ti ti-briefcase"
-            aria-hidden="true"
-            style={{ fontSize: 64, color: "#d44d1c" }}
-          /> */}
-              <img src={logo} alt="Carryio Logo" />
             </div>
           </div>
 

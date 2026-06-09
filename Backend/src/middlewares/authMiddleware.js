@@ -17,7 +17,6 @@ function getTokenFromRequest(req) {
 
 module.exports.authMiddleware = async function (req, res, next) {
   const token = getTokenFromRequest(req);
-  console.log("token: ", token);
   if (!token) {
     return res.status(401).json({
       message: "Token is not provided ",

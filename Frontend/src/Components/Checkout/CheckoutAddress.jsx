@@ -25,6 +25,7 @@ const EMPTY_ADDRESS = {
 export default function CheckoutAddress() {
   const [address, setAddress] = useState(EMPTY_ADDRESS);
   const [defaultCreated, setDefaultCreated] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const product = location.state?.product || {
@@ -38,13 +39,42 @@ export default function CheckoutAddress() {
   };
 
   const createDefaultAddress = () => {
-    setAddress(DEFAULT_ADDRESS);
+    setAddress({ ...DEFAULT_ADDRESS, isDefault: true });
     setDefaultCreated(true);
   };
 
-  const handleNext = (event) => {
+  const handleNext = async (event) => {
     event.preventDefault();
-    navigate("/checkout/payment", { state: { product, address } });
+    setIsSaving(true);
+
+    try {
+      const response = await fetch("http://localhost:3000/addresses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          ...address,
+          isDefault: Boolean(address.isDefault || defaultCreated),
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.message || "Address save failed");
+        return;
+      }
+
+      navigate("/checkout/payment", {
+        state: { product, address: data.address },
+      });
+    } catch (err) {
+      alert("Unable to save address. Please check backend server.");
+      console.error("Error saving address:", err);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -155,8 +185,8 @@ export default function CheckoutAddress() {
             >
               Create default address
             </button>
-            <button type="submit" className="btn-primary">
-              Next to payment
+            <button type="submit" className="btn-primary" disabled={isSaving}>
+              {isSaving ? "Saving..." : "Next to payment"}
             </button>
           </div>
         </form>

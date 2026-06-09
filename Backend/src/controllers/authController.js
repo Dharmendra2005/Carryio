@@ -1,4 +1,4 @@
-const userModel = require("../models/userModel");
+const userModel = require(".././models/roleModels/userModel");
 const bcrypt = require("bcrypt");
 const generateToken = require('../utils/generateToken');
 const blacklistTokenModel = require("../models/blacklistTokenModel");
@@ -8,9 +8,9 @@ const blacklistTokenModel = require("../models/blacklistTokenModel");
  * @access Public
  */
 module.exports.registerUser = async (req, res) => {
-  let { username, email, password } = req.body;
+  let { firstName, lastName, email, password } = req.body;
 
-  if (!username || !email || !password) {
+  if (!firstName || !lastName || !email || !password) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
@@ -22,12 +22,22 @@ module.exports.registerUser = async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new userModel({
-      username,
+      firstName,
+      lastName,
       email,
       password: hashedPassword,
     });
     await newUser.save();
-    res.status(201).json({ message: "User registered successfully" });
+    let token = generateToken(newUser);
+    res.cookie("token", token, {
+      httpOnly: true,
+      sameSite: "lax",
+    });
+    res.status(201).json({
+      message: "User registered successfully",
+      token,
+      user: newUser,
+    });
   } catch (err) {
     console.error("Error registering user:", err);
     res.status(500).json({ message: "Server error" });
@@ -81,7 +91,7 @@ module.exports.logout = async (req, res) => {
 
 
 module.exports.getme = async (req, res) => {
-  const user = await userModel.findById(req.user.id);
+  const user = await userModel.findById(req.user.id).select("-password");
   return res.status(200).json({
     message : "User data reterive successfully",
     user
