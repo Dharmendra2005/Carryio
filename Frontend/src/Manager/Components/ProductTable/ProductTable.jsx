@@ -9,7 +9,8 @@ const PILL_MAP = {
 
 export default function ProductTable({ products, onEdit, onDelete }) {
   return (
-    <div className="product-table-wrap">
+    <div className="section-card">
+      <div className="section-card__body--flush product-table-wrap">
       <table className="data-table">
         <thead>
           <tr>
@@ -86,6 +87,7 @@ export default function ProductTable({ products, onEdit, onDelete }) {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

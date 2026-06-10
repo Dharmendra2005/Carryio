@@ -1,12 +1,13 @@
 import "./Sidebar.css";
 
-const NAV = [
+function buildNav(productCount, orderCount) {
+  return [
   {
     label: "Overview",
     items: [
-      { id: "dashboard",   icon: "ti-layout-dashboard", label: "Dashboard" },
-      { id: "products",    icon: "ti-package",           label: "Products",  badge: 24 },
-      { id: "orders",      icon: "ti-shopping-cart",     label: "Orders",    badge: 7  },
+      { id: "dashboard", icon: "ti-layout-dashboard", label: "Dashboard" },
+      { id: "products", icon: "ti-package", label: "Products", badge: productCount },
+      { id: "orders", icon: "ti-shopping-cart", label: "Orders", badge: orderCount },
     ],
   },
   {
@@ -18,8 +19,17 @@ const NAV = [
     ],
   },
 ];
+}
 
-export default function Sidebar({ active, onNavigate, manager }) {
+export default function Sidebar({
+  active,
+  onNavigate,
+  manager,
+  productCount = 24,
+  orderCount = 7,
+}) {
+  const nav = buildNav(productCount, orderCount);
+
   return (
     <aside className="sidebar">
       {/* Logo */}
@@ -32,7 +42,7 @@ export default function Sidebar({ active, onNavigate, manager }) {
 
       {/* Nav groups */}
       <nav className="sidebar__nav">
-        {NAV.map((group) => (
+        {nav.map((group) => (
           <div key={group.label} className="sidebar__group">
             <div className="sidebar__group-label">{group.label}</div>
             {group.items.map((item) => (

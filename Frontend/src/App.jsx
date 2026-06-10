@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "./App.css";
 import logo from "./assets/carryio_logo.svg";
 import ManagerApp from "./Manager/ManagerApp";
+import ManagerLogin from "./Components/ManagerLogin/managerLogin";
 
 import UserLogin from "./Components/Auth/Login";
 import Cart from "./Components/Cart/Cart";
@@ -144,6 +145,8 @@ function App() {
 
   const isAuthPage =
     location.pathname === "/login" || location.pathname === "/register";
+
+  const isManagerRoute = location.pathname.startsWith("/manager");
 
   const activeProduct = useMemo(() => {
     if (!location.pathname.startsWith("/product/")) {
@@ -372,13 +375,19 @@ function App() {
     </nav>
   );
 
+  if (location.pathname === "/manager/login") {
+    return <ManagerLogin />;
+  }
+
+  if (location.pathname === "/manager") {
+    return <ManagerApp />;
+  }
+
   return (
     <div className="wrap" id="wrap">
-      {renderHeader()}
+      {!isManagerRoute && renderHeader()}
 
-      {location.pathname === "/manager" ? (
-        <ManagerApp />
-      ) : isAuthPage ? (
+      {isAuthPage ? (
         <div style={{ padding: 24 }}>
           <UserLogin
             key={location.pathname}
