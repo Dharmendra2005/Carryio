@@ -1,0 +1,80 @@
+.manager-modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.55);
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    z-index:999;
+}
+
+.manager-modal{
+
+    width:400px;
+    background:#fff;
+    border-radius:14px;
+
+    padding:35px;
+    position:relative;
+
+    animation:popup .25s ease;
+}
+
+@keyframes popup{
+
+from{
+    opacity:0;
+    transform:scale(.9);
+}
+
+to{
+    opacity:1;
+    transform:scale(1);
+}
+
+}
+
+.manager-close{
+
+    position:absolute;
+    top:15px;
+    right:15px;
+
+    border:none;
+    background:none;
+    font-size:22px;
+    cursor:pointer;
+}
+
+.manager-modal h2{
+
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.manager-modal input{
+
+    width:100%;
+    padding:12px;
+
+    margin-bottom:18px;
+
+    border-radius:8px;
+    border:1px solid #ccc;
+}
+
+.manager-modal button[type="submit"]{
+
+    width:100%;
+
+    padding:12px;
+
+    border:none;
+    border-radius:8px;
+
+    background:black;
+    color:white;
+    cursor:pointer;
+}

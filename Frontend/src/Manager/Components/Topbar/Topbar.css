@@ -1,0 +1,100 @@
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: var(--bg-card);
+  border-bottom: 0.5px solid var(--border-md);
+  flex-shrink: 0;
+  gap: 16px;
+  min-height: 56px;
+}
+
+/* ── Title block ── */
+.topbar__title-block { flex-shrink: 0; }
+
+.topbar__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+}
+
+.topbar__sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+/* ── Right actions ── */
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── Search ── */
+.topbar__search {
+  position: relative;
+  max-width: 240px;
+  flex: 1;
+}
+
+.topbar__search-icon {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: #bbb;
+  pointer-events: none;
+}
+
+.topbar__search-input {
+  width: 100%;
+  padding: 7px 12px 7px 30px;
+  font-size: 12px;
+  border: 0.5px solid var(--border-input);
+  border-radius: var(--radius-md);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--ease), background var(--ease);
+  font-family: var(--font-body);
+}
+
+.topbar__search-input::placeholder { color: #bbb; }
+.topbar__search-input:focus {
+  border-color: var(--brand);
+  background: var(--bg-card);
+}
+
+/* ── Notification ── */
+.topbar__notif {
+  position: relative;
+  padding: 7px;
+  border: 0.5px solid var(--border-input);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  transition: border-color var(--ease);
+}
+
+.topbar__notif:hover { border-color: var(--brand); color: var(--brand); }
+
+.topbar__notif-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--brand);
+  border: 1.5px solid var(--bg-card);
+}

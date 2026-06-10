@@ -1,0 +1,67 @@
+.settings-two-col {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 16px;
+  align-items: start;
+}
+
+.st-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.st-full { grid-column: 1 / -1; }
+
+.st-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 0.5px solid var(--border-lt);
+}
+
+.st-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--brand-light);
+  border: 1px solid var(--brand-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--brand);
+  flex-shrink: 0;
+}
+
+/* Reuse pf-label & pf-input */
+.pf-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  color: #888;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.pf-input {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 12.5px;
+  border: 0.5px solid var(--border-input);
+  border-radius: var(--radius-md);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--ease), background var(--ease);
+  font-family: var(--font-body);
+}
+
+.pf-input:focus { border-color: var(--brand); background: var(--bg-card); }
+.pf-input::placeholder { color: var(--text-placeholder); }
+
+.fg { display: flex; flex-direction: column; }

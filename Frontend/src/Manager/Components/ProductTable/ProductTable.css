@@ -1,0 +1,11 @@
+.product-table-wrap { overflow-x: auto; }
+
+.pt-low-stock {
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.pt-low-stock::after {
+  content: " ⚠";
+  font-size: 10px;
+}

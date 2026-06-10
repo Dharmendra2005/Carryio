@@ -13,6 +13,7 @@ function UserLogin({ initialTab = "login", onAuthSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
+
   const returnTo = location.state?.returnTo || "/";
   const nextState = location.state?.product
     ? { product: location.state.product }
@@ -162,9 +163,15 @@ function UserLogin({ initialTab = "login", onAuthSuccess }) {
               <Link to="/" className="auth-home-link">
                 Back to home
               </Link>
-              <Link to="/admin/login" className="auth-admin-link">
-                Login as admin
-              </Link>
+              {/* <Link to="/manager/login" className="auth-admin-link">
+                Login as manager
+              </Link> */}
+              <button
+                className="auth-admin-link"
+                onClick={() => navigate("/manager/login")}
+              >
+                Login as Manager
+              </button>
             </div>
           </div>
         ) : (

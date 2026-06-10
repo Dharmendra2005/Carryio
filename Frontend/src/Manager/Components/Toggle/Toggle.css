@@ -1,0 +1,30 @@
+.toggle {
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--border-input);
+  position: relative;
+  cursor: pointer;
+  transition: background var(--ease);
+  border: none;
+  flex-shrink: 0;
+  outline: none;
+}
+
+.toggle:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left var(--ease);
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+
+.toggle--on { background: var(--brand); }
+.toggle--on::after { left: 19px; }

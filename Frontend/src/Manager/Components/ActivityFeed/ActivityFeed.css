@@ -1,0 +1,25 @@
+.activity-feed { padding: 4px 0; }
+
+.activity-item {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 0.5px solid var(--border-lt);
+}
+
+.activity-item:last-child { border-bottom: none; }
+
+.activity__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.activity__dot--success { background: var(--green); }
+.activity__dot--default { background: var(--brand); }
+.activity__dot--muted   { background: var(--border-input); }
+
+.activity__title { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+.activity__time  { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
