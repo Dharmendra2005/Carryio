@@ -1,4 +1,16 @@
 /* ─── Manager panel design tokens ─────────────────────────────────────────── */
+.dashboard--loading {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  background: var(--bg-page, #f7f4f1);
+}
+
+.dashboard__loading {
+  font-size: 14px;
+  color: #8a7f78;
+}
+
 .dashboard {
   --sidebar-w: 220px;
   --brand: #d85a30;

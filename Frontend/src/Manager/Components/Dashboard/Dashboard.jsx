@@ -1,29 +1,7 @@
 import StatCard from "../StatCard/StatCard";
 import ActivityFeed from "../ActivityFeed/ActivityFeed";
+import { formatRevenue } from "../../../utils/productMappers";
 import "./Dashboard.css";
-
-const BASE_STATS = [
-  { label: "Total Products", change: "3 this week", changeType: "up", icon: "📦" },
-  { label: "Orders Today", value: "7", change: "2 from yesterday", changeType: "up", icon: "🛒" },
-  { label: "Revenue (Month)", value: "₹84k", change: "12% vs last month", changeType: "up", icon: "💰" },
-  { label: "Managers", value: "3", change: "1 pending invite", changeType: "down", icon: "👥" },
-];
-
-function buildStats(productCount) {
-  return BASE_STATS.map((stat) =>
-    stat.label === "Total Products"
-      ? { ...stat, value: String(productCount) }
-      : stat,
-  );
-}
-
-const ACTIVITY = [
-  { title: 'Product "Canvas Backpack" added', time: "2 hours ago · by Dharm", type: "success" },
-  { title: "Order #1042 marked as shipped", time: "4 hours ago · by Dharm", type: "default" },
-  { title: 'Manager "Priya" invited', time: "Yesterday · by Dharm", type: "success" },
-  { title: "Price updated on 3 products", time: "2 days ago · by Dharm", type: "default" },
-  { title: '"Velvet Clutch" set to Draft', time: "3 days ago · by Dharm", type: "muted" },
-];
 
 const STATUS_PILL = {
   Hot: "pill--hot",
@@ -39,21 +17,65 @@ function getDisplayStatus(product) {
   return "Active";
 }
 
-export default function Dashboard({ products = [], manager, onNavigate, onEdit }) {
-  const recentProducts = products.filter((p) => p.id !== 4).slice(0, 5);
-  const stats = buildStats(products.length);
-  const managerName = manager?.name?.split(" ")[0] ?? "Manager";
+function buildStats(stats, productCount) {
+  const productsThisWeek = stats?.productsThisWeek ?? 0;
+  const ordersToday = stats?.ordersToday ?? 0;
+  const ordersDelta = stats?.ordersYesterdayDelta ?? 0;
+  const monthRevenue = stats?.monthRevenue ?? 0;
+  const managersCount = stats?.managersCount ?? 0;
 
-  const activity = ACTIVITY.map((item, index) =>
-    index === 0
-      ? { ...item, time: item.time.replace("Dharm", managerName) }
-      : item,
-  );
+  return [
+    {
+      label: "Total Products",
+      value: String(stats?.productCount ?? productCount),
+      change: `${productsThisWeek} this week`,
+      changeType: productsThisWeek > 0 ? "up" : "neutral",
+      icon: "📦",
+    },
+    {
+      label: "Orders Today",
+      value: String(ordersToday),
+      change:
+        ordersDelta >= 0
+          ? `${ordersDelta} from yesterday`
+          : `${Math.abs(ordersDelta)} fewer than yesterday`,
+      changeType: ordersDelta >= 0 ? "up" : "down",
+      icon: "🛒",
+    },
+    {
+      label: "Revenue (Month)",
+      value: formatRevenue(monthRevenue),
+      change: monthRevenue > 0 ? "Based on placed orders" : "No revenue yet",
+      changeType: monthRevenue > 0 ? "up" : "neutral",
+      icon: "💰",
+    },
+    {
+      label: "Managers",
+      value: String(managersCount),
+      change: managersCount > 1 ? "Team active" : "Invite more managers",
+      changeType: "neutral",
+      icon: "👥",
+    },
+  ];
+}
+
+export default function Dashboard({
+  products = [],
+  stats,
+  activity = [],
+  manager,
+  onNavigate,
+  onEdit,
+}) {
+  const recentProducts = [...products]
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+    .slice(0, 5);
+  const statCards = buildStats(stats, products.length);
 
   return (
     <div>
       <div className="stats-grid">
-        {stats.map((stat) => (
+        {statCards.map((stat) => (
           <StatCard key={stat.label} {...stat} />
         ))}
       </div>
@@ -71,57 +93,61 @@ export default function Dashboard({ products = [], manager, onNavigate, onEdit }
               </button>
             </div>
             <div className="section-card__body--flush">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Product</th>
-                    <th>Price</th>
-                    <th>Stock</th>
-                    <th>Status</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentProducts.map((product) => {
-                    const displayStatus = getDisplayStatus(product);
-                    return (
-                      <tr key={product.id}>
-                        <td>
-                          <div className="td-product">
-                            <div
-                              className="td-thumb"
-                              style={{ background: product.thumbBg }}
+              {recentProducts.length === 0 ? (
+                <div className="dashboard-empty">No products yet. Add your first product.</div>
+              ) : (
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>Price</th>
+                      <th>Stock</th>
+                      <th>Status</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentProducts.map((product) => {
+                      const displayStatus = getDisplayStatus(product);
+                      return (
+                        <tr key={product.id}>
+                          <td>
+                            <div className="td-product">
+                              <div
+                                className="td-thumb"
+                                style={{ background: product.thumbBg }}
+                              >
+                                {product.icon}
+                              </div>
+                              <div>
+                                <div className="td-name">{product.name}</div>
+                                <div className="td-meta">{product.category}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td>₹{product.price.toLocaleString("en-IN")}</td>
+                          <td>{product.stock}</td>
+                          <td>
+                            <span
+                              className={`pill ${STATUS_PILL[displayStatus] ?? "pill--draft"}`}
                             >
-                              {product.icon}
-                            </div>
-                            <div>
-                              <div className="td-name">{product.name}</div>
-                              <div className="td-meta">{product.category}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td>₹{product.price.toLocaleString("en-IN")}</td>
-                        <td>{product.stock}</td>
-                        <td>
-                          <span
-                            className={`pill ${STATUS_PILL[displayStatus] ?? "pill--draft"}`}
-                          >
-                            {displayStatus}
-                          </span>
-                        </td>
-                        <td>
-                          <button
-                            className="act-btn"
-                            onClick={() => onEdit?.(product)}
-                          >
-                            Edit
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                              {displayStatus}
+                            </span>
+                          </td>
+                          <td>
+                            <button
+                              className="act-btn"
+                              onClick={() => onEdit?.(product)}
+                            >
+                              Edit
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         </div>
@@ -132,7 +158,11 @@ export default function Dashboard({ products = [], manager, onNavigate, onEdit }
               <div className="section-card__title">Recent activity</div>
             </div>
             <div className="section-card__body">
-              <ActivityFeed items={activity} />
+              {activity.length === 0 ? (
+                <div className="dashboard-empty">Activity will appear as you add products and orders.</div>
+              ) : (
+                <ActivityFeed items={activity} />
+              )}
             </div>
           </div>
         </div>

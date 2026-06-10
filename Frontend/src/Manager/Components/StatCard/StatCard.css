@@ -49,6 +49,6 @@
   font-weight: 500;
 }
 
-.stat-card__change--up   { color: var(--green); }
+.stat-card__change--up { color: var(--green); }
 .stat-card__change--down { color: var(--brand); }
 .stat-card__change--neutral { color: var(--text-muted); }

@@ -12,7 +12,7 @@ export default function StatCard({ label, value, change, changeType = "up", icon
       <div className="stat-card__value">{value}</div>
       {change && (
         <div className={`stat-card__change stat-card__change--${changeType}`}>
-          {changeType === "up" ? "↑" : "↓"} {change}
+          {changeType === "up" ? "↑" : changeType === "down" ? "↓" : ""} {change}
         </div>
       )}
     </div>

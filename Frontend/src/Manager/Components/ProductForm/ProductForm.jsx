@@ -6,7 +6,7 @@ const CATEGORIES = ["Tote bags","Backpacks","Wallets","Clutches","Sling bags","T
 const BADGES     = ["None","New","Hot","Sale"];
 const COLORS     = ["#1a1a1a","#8B6914","#D85A30","#185FA5","#6b2d55","#3B6D11","#c0392b","#7f8c8d"];
 
-export default function ProductForm({ initial = {}, onSave, onDraft }) {
+export default function ProductForm({ initial = {}, onSave, onDraft, saving = false }) {
   const [form, setForm] = useState({
     name:        initial.name        ?? "",
     category:    initial.category    ?? "",
@@ -264,15 +264,15 @@ export default function ProductForm({ initial = {}, onSave, onDraft }) {
 
           {/* Form actions */}
           <div className="pf-actions">
-            <button className="btn btn--ghost" type="button" onClick={() => onDraft?.(form)}>
+            <button className="btn btn--ghost" type="button" disabled={saving} onClick={() => onDraft?.(form)}>
               Save as draft
             </button>
-            <button className="btn btn--primary" type="button" onClick={() => onSave?.(form)}>
+            <button className="btn btn--primary" type="button" disabled={saving} onClick={() => onSave?.(form)}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 strokeWidth="2.5" strokeLinecap="round" width="13" height="13">
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
-              Publish product
+              {saving ? "Saving…" : "Publish product"}
             </button>
           </div>
 

@@ -27,12 +27,12 @@ const orderSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "user",
       required: true,
     },
     address: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Address",
+      ref: "address",
       required: true,
     },
     items: {
@@ -68,8 +68,8 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["placed", "paid", "cancelled"],
-      default: "placed",
+      enum: ["New", "Shipped", "Delivered", "Cancelled", "placed", "paid", "cancelled"],
+      default: "New",
     },
   },
   { timestamps: true },

@@ -10,6 +10,7 @@ const orderRouter = require('./routes/orderRouter');
 const userRouter = require('././routes/roleRouter/userRouter');
 const cartRouter = require('./routes/cartRouter');
 const managerRouter = require('./routes/roleRouter/managerRouter');
+const productRouter = require('./routes/productRouter');
 const app = express();
 
 app.use(cookieParser());
@@ -26,9 +27,7 @@ app.use(cors({
 
 app.use('/users', userRouter);
 app.use('/manager', managerRouter);
-
-
-
+app.use('/products', productRouter);
 
 
 app.use('/addresses', addressRouter);

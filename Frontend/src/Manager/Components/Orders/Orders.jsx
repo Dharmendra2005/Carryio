@@ -8,6 +8,18 @@ const STATUS_PILL = {
 };
 
 export default function Orders({ orders, onProcess, onTrack, onView }) {
+  if (!orders.length) {
+    return (
+      <div className="section-card">
+        <div className="section-card__body">
+          <p style={{ margin: 0, color: "var(--text-muted)", fontSize: 12 }}>
+            No orders yet. Customer orders will appear here.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="section-card">
       <div className="section-card__body--flush">

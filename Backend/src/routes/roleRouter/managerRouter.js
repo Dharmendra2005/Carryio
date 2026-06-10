@@ -34,8 +34,7 @@ router.post('/logout', managerController.managerLogout);
  * @access Public
  */
 router.get("/get-me", authMiddleware.authMiddleware, managerController.getManagerProfile);
- 
-
-
+router.get("/all", authMiddleware.authMiddleware, managerController.getAllManagers);
+router.get("/dashboard", authMiddleware.authMiddleware, managerController.getDashboardStats);
 
 module.exports = router;

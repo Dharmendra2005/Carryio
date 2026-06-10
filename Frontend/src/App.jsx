@@ -10,81 +10,7 @@ import Cart from "./Components/Cart/Cart";
 import CheckoutAddress from "./Components/Checkout/CheckoutAddress";
 import CheckoutPayment from "./Components/Checkout/CheckoutPayment";
 import ProductDetail from "./Components/ProductDetail/ProductDetail";
-
-const PRODUCTS = [
-  {
-    name: "Classic leather tote",
-    cat: "tote",
-    price: "₹2,499",
-    bg: "#FAECE7",
-    icon: "ti-briefcase",
-    badge: "hot",
-    color: "#D85A30",
-  },
-  {
-    name: "Canvas backpack",
-    cat: "backpack",
-    price: "₹1,899",
-    bg: "#E1F5EE",
-    icon: "ti-backpack",
-    badge: "new",
-    color: "#0F6E56",
-  },
-  {
-    name: "Slim bifold wallet",
-    cat: "wallet",
-    price: "₹699",
-    bg: "#E6F1FB",
-    icon: "ti-wallet",
-    badge: "",
-    color: "#185FA5",
-  },
-  {
-    name: "Velvet clutch bag",
-    cat: "clutch",
-    price: "₹1,199",
-    bg: "#FBEAF0",
-    icon: "ti-heart",
-    badge: "new",
-    color: "#993556",
-  },
-  {
-    name: "Urban sling bag",
-    cat: "sling",
-    price: "₹1,499",
-    bg: "#FAEEDA",
-    icon: "ti-bag",
-    badge: "hot",
-    color: "#854F0B",
-  },
-  {
-    name: "Weekend travel bag",
-    cat: "travel",
-    price: "₹3,299",
-    bg: "#EAF3DE",
-    icon: "ti-luggage",
-    badge: "",
-    color: "#3B6D11",
-  },
-  {
-    name: "Suede tote large",
-    cat: "tote",
-    price: "₹2,899",
-    bg: "#FCEBEB",
-    icon: "ti-briefcase",
-    badge: "",
-    color: "#A32D2D",
-  },
-  {
-    name: "Cord wallet zip",
-    cat: "wallet",
-    price: "₹849",
-    bg: "#EEEDFE",
-    icon: "ti-wallet",
-    badge: "new",
-    color: "#534AB7",
-  },
-];
+import { fetchStoreProducts } from "./api/products";
 
 const CATEGORIES = [
   { label: "All products", value: "all" },
@@ -117,8 +43,29 @@ function App() {
     return storedCart ? JSON.parse(storedCart) : [];
   });
   const [menuOpen, setMenuOpen] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    let active = true;
+
+    fetchStoreProducts()
+      .then((items) => {
+        if (active) setProducts(items);
+      })
+      .catch((err) => {
+        console.error("Failed to load products:", err);
+      })
+      .finally(() => {
+        if (active) setProductsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -134,8 +81,8 @@ function App() {
 
   const filteredProducts =
     active === "all"
-      ? PRODUCTS
-      : PRODUCTS.filter((product) => product.cat === active);
+      ? products
+      : products.filter((product) => product.cat === active);
 
   const openAuthPage = (path) => {
     navigate(path, {
@@ -155,9 +102,9 @@ function App() {
 
     const productSlug = location.pathname.replace("/product/", "");
     return (
-      PRODUCTS.find((product) => slugify(product.name) === productSlug) || null
+      products.find((product) => slugify(product.name) === productSlug) || null
     );
-  }, [location.pathname]);
+  }, [location.pathname, products]);
 
   const handleAuthSuccess = (nextUser) => {
     setUser(nextUser);
@@ -481,9 +428,18 @@ function App() {
               <span className="section-view-all">View all →</span>
             </div>
             <div className="grid" id="grid">
+              {productsLoading ? (
+                <p style={{ gridColumn: "1 / -1", color: "#70665e" }}>
+                  Loading products…
+                </p>
+              ) : filteredProducts.length === 0 ? (
+                <p style={{ gridColumn: "1 / -1", color: "#70665e" }}>
+                  No products available yet. Managers can add products from the manager panel.
+                </p>
+              ) : null}
               {filteredProducts.map((product) => (
                 <div
-                  key={`${product.cat}-${product.name}`}
+                  key={product._id || `${product.cat}-${product.name}`}
                   className="card"
                   onClick={() => handleProductClick(product)}
                 >
