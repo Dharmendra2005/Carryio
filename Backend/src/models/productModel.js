@@ -40,16 +40,13 @@ const productSchema = new mongoose.Schema(
     material: { type: String, default: "" },
     metaTitle: { type: String, default: "" },
     metaDesc: { type: String, default: "" },
-    status: {
-      type: String,
-      enum: ["Active", "Draft"],
-      default: "Active",
-    },
+    status: { type: String, enum: ["Active", "Draft"], default: "Active" },
     published: { type: Boolean, default: true },
     featured: { type: Boolean, default: false },
     freeShipping: { type: Boolean, default: true },
     cod: { type: Boolean, default: true },
     colors: { type: [String], default: ["#1a1a1a"] },
+    images: { type: [String], default: [] },   // ← added
     thumbBg: { type: String, default: "#F7F4F1" },
     icon: { type: String, default: "👜" },
     color: { type: String, default: "#D85A30" },
