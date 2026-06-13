@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import "./Checkout.css";
-import CODPayment from "../PaymentMethod/COD";
-import UPIPayment from "../PaymentMethod/UPI";  
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useApp } from "../context/AppContext";
+import "../Components/Checkout/Checkout.css";
+import CODPayment from "../Components/PaymentMethod/COD";
+import UPIPayment from "../Components/PaymentMethod/UPI";
 
 const PAYMENT_METHODS = [
   {
@@ -11,7 +12,7 @@ const PAYMENT_METHODS = [
     detail: "UPI, cards, Net Banking & Wallets",
   },
   {
-    id: "upi",                              
+    id: "upi",
     label: "UPI",
     detail: "GPay, PhonePe, Paytm, BHIM & more",
   },
@@ -25,11 +26,6 @@ const PAYMENT_METHODS = [
 const PLATFORM_FEE = 35;
 const COD_FEE = 9;
 
-function getPriceValue(price) {
-  const amount = String(price).replace(/[^0-9]/g, "");
-  return Number(amount || 0);
-}
-
 function formatPrice(amount) {
   return `Rs. ${amount.toLocaleString("en-IN")}`;
 }
@@ -38,40 +34,72 @@ export default function CheckoutPayment() {
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [showCOD, setShowCOD] = useState(false);
-  const [showUPI, setShowUPI] = useState(false);  // ← added
+  const [showUPI, setShowUPI] = useState(false);
 
   const location = useLocation();
-  const product = location.state?.product || {
+  const navigate = useNavigate();
+  const { clearCart } = useApp();
+
+  const checkoutData = location.state?.checkoutData || {
+    items: [{ name: "Selected product", price: 1999, quantity: 1, category: "" }],
+    total: 1999,
     title: "Selected product",
-    price: "Rs. 1,999",
   };
   const address = location.state?.address;
-  const itemTotal = getPriceValue(product.price);
+
+  const itemTotal = checkoutData.total;
   const codFee = paymentMethod === "cod" ? COD_FEE : 0;
   const amountPayable = itemTotal + PLATFORM_FEE + codFee;
-  const selectedMethod = PAYMENT_METHODS.find(
-    (method) => method.id === paymentMethod,
-  );
+  const selectedMethod = PAYMENT_METHODS.find((method) => method.id === paymentMethod);
 
-  if (showCOD) {
-    return (
-      <CODPayment
-        product={product}
-        address={address}
-        amountPayable={amountPayable}
-      />
-    );
-  }
+  // Place UPI or COD Order
+  const placeOrderDirect = async (method) => {
+    if (!address?._id) {
+      alert("Please save delivery address before placing order.");
+      return;
+    }
 
-  if (showUPI) {                           
-    return (
-      <UPIPayment
-        product={product}
-        address={address}
-        amountPayable={amountPayable}
-      />
-    );
-  }
+    setIsPlacingOrder(true);
+
+    try {
+      const response = await fetch("http://localhost:3000/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          addressId: address._id,
+          items: checkoutData.items,
+          paymentMethod: method,
+          platformFee: PLATFORM_FEE,
+          codFee: method === "cod" ? COD_FEE : 0,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.message || "Order failed");
+        return;
+      }
+
+      // Order placed successfully, clear cart
+      clearCart();
+
+      if (method === "cod") {
+        setShowCOD(true);
+      } else {
+        alert("Order placed successfully via UPI!");
+        navigate("/", { replace: true });
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Unable to place order.");
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  };
 
   const handlePlaceOrder = async () => {
     if (!address?._id) {
@@ -98,43 +126,47 @@ export default function CheckoutPayment() {
           amount: order.amount,
           currency: order.currency,
           order_id: order.id,
-          name: "DharmPaaG",
-          description: product.title,
-
+          name: "Carryio",
+          description: checkoutData.title,
           handler: async function (payment) {
-            const verify = await fetch("http://localhost:3000/payment/verify", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              credentials: "include",
-              body: JSON.stringify({
-                razorpay_order_id: payment.razorpay_order_id,
-                razorpay_payment_id: payment.razorpay_payment_id,
-                razorpay_signature: payment.razorpay_signature,
-                addressId: address._id,
-                product,
-                paymentMethod: "card",
-                platformFee: PLATFORM_FEE,
-              }),
-            });
+            try {
+              const verify = await fetch("http://localhost:3000/payment/verify", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify({
+                  razorpay_order_id: payment.razorpay_order_id,
+                  razorpay_payment_id: payment.razorpay_payment_id,
+                  razorpay_signature: payment.razorpay_signature,
+                  addressId: address._id,
+                  items: checkoutData.items,
+                  paymentMethod: "card",
+                  platformFee: PLATFORM_FEE,
+                }),
+              });
 
-            const data = await verify.json();
+              const data = await verify.json();
 
-            if (verify.ok) {
-              alert("Payment Successful!");
-            } else {
-              alert(data.message || "Payment verification failed.");
+              if (verify.ok) {
+                alert("Payment Successful!");
+                clearCart();
+                navigate("/", { replace: true });
+              } else {
+                alert(data.message || "Payment verification failed.");
+              }
+            } catch (err) {
+              console.error(err);
+              alert("Error verifying payment.");
             }
           },
-
           prefill: {
             name: address.fullName,
             contact: address.mobile,
           },
-
           theme: {
-            color: "#3399cc",
+            color: "#D85A30",
           },
         };
 
@@ -144,50 +176,38 @@ export default function CheckoutPayment() {
         console.error(err);
         alert("Unable to start payment.");
       }
-
       return;
     }
 
-    // ── UPI ──────────────────────────────────────────────────────────── ← added
     if (paymentMethod === "upi") {
       setShowUPI(true);
       return;
     }
 
     // Cash on Delivery
-    setIsPlacingOrder(true);
-
-    try {
-      const response = await fetch("http://localhost:3000/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          addressId: address._id,
-          product,
-          paymentMethod: "cod",
-          platformFee: PLATFORM_FEE,
-          codFee,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.message || "Order failed");
-        return;
-      }
-
-      setShowCOD(true);
-    } catch (err) {
-      console.error(err);
-      alert("Unable to place order.");
-    } finally {
-      setIsPlacingOrder(false);
-    }
+    await placeOrderDirect("cod");
   };
+
+  if (showCOD) {
+    return (
+      <CODPayment
+        checkoutData={checkoutData}
+        address={address}
+        amountPayable={amountPayable}
+      />
+    );
+  }
+
+  if (showUPI) {
+    return (
+      <UPIPayment
+        checkoutData={checkoutData}
+        address={address}
+        amountPayable={amountPayable}
+        onPay={() => placeOrderDirect("upi")}
+      />
+    );
+  }
 
   return (
     <div className="main checkout-page">
@@ -210,8 +230,8 @@ export default function CheckoutPayment() {
 
           <div className="payment-card">
             <div>
-              <span>Product</span>
-              <strong>{product.title}</strong>
+              <span>Products</span>
+              <strong>{checkoutData.title}</strong>
             </div>
             <div>
               <span>Payment method</span>
@@ -224,9 +244,7 @@ export default function CheckoutPayment() {
               <button
                 type="button"
                 key={method.id}
-                className={`payment-method ${
-                  paymentMethod === method.id ? "active" : ""
-                }`}
+                className={`payment-method ${paymentMethod === method.id ? "active" : ""}`}
                 onClick={() => setPaymentMethod(method.id)}
               >
                 <span>{method.label}</span>
@@ -262,6 +280,7 @@ export default function CheckoutPayment() {
             className="btn-primary payment-final-btn"
             onClick={handlePlaceOrder}
             disabled={isPlacingOrder}
+            style={{ border: "none", cursor: "pointer" }}
           >
             {isPlacingOrder ? "Placing order..." : "Continue"}
           </button>

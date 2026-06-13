@@ -21,7 +21,7 @@ import {
   fetchManagerProfile,
   inviteManager,
 } from "../api/managers";
-import { buildProductPayload } from "../utils/productMappers";
+// ← removed buildProductPayload import
 import "./ManagerApp.css";
 
 const DEFAULT_MANAGER = {
@@ -114,8 +114,10 @@ export default function ManagerApp() {
   }, [loadDashboardData, navigate]);
 
   useEffect(() => {
-    loadManagerSession();
-  }, [loadManagerSession]);
+  let cancelled = false;
+  if (!cancelled) loadManagerSession();
+  return () => { cancelled = true; };
+}, [loadManagerSession]);
 
   const navigatePage = (nextPage) => setPage(nextPage);
 
@@ -136,17 +138,20 @@ export default function ManagerApp() {
     settings: { title: "Store Settings", subtitle: "Update your store and account details" },
   };
 
-  const handleSaveProduct = async (form, statusOverride) => {
+  // ── fixed: pass FormData straight through, no buildProductPayload ──
+  const handleSaveProduct = async (formData, statusOverride) => {
     setSaving(true);
     setError("");
 
     try {
-      const payload = buildProductPayload(form, statusOverride);
+      if (statusOverride) {
+        formData.append("status", statusOverride);
+      }
 
       if (editTarget?.id) {
-        await updateProduct(editTarget.id, payload);
+        await updateProduct(editTarget.id, formData);
       } else {
-        await createProduct(payload);
+        await createProduct(formData);
       }
 
       setEditTarget(null);

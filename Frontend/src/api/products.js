@@ -11,18 +11,20 @@ export async function fetchManagerProducts() {
   return (data.products || []).map(mapProductForManager);
 }
 
-export async function createProduct(payload) {
+export async function createProduct(formData) {
   const data = await apiFetch("/products", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: formData,          // ← FormData directly, no JSON.stringify
+    isFormData: true,        // ← signal to apiFetch to skip Content-Type header
   });
   return mapProductForManager(data.product);
 }
 
-export async function updateProduct(id, payload) {
+export async function updateProduct(id, formData) {
   const data = await apiFetch(`/products/${id}`, {
     method: "PUT",
-    body: JSON.stringify(payload),
+    body: formData,          // ← FormData directly
+    isFormData: true,
   });
   return mapProductForManager(data.product);
 }

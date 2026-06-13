@@ -1,0 +1,132 @@
+.upi-page{
+    max-width:1200px;
+    margin:auto;
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:30px;
+    padding:40px;
+}
+
+.amount-box{
+    border:1px solid #d26a28;
+    border-radius:12px;
+    padding:20px;
+    display:flex;
+    justify-content:space-between;
+}
+
+.amount-box h2{
+    color:#d26a28;
+}
+
+.upi-apps{
+    display:flex;
+    gap:15px;
+    margin:20px 0;
+}
+
+.upi-apps button{
+    padding:15px 20px;
+    border:1px solid #ddd;
+    background:white;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+.upi-input input{
+    width:100%;
+    padding:14px;
+    border:1px solid #ddd;
+    border-radius:8px;
+}
+
+.qr-box{
+    margin:30px 0;
+    text-align:center;
+}
+
+.pay-btn{
+    width:100%;
+    border:none;
+    background:#d26a28;
+    color:white;
+    padding:16px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+.card{
+    border:1px solid #ddd;
+    padding:20px;
+    border-radius:12px;
+    margin-bottom:20px;
+}
+
+.order-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.order-product {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.order-product-img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  flex-shrink: 0;
+}
+
+.order-product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.order-product-info strong {
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.order-brand {
+  font-size: 13px;
+  color: #888;
+}
+
+.order-meta {
+  font-size: 13px;
+  color: #555;
+}
+
+.order-price-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid #eee;
+  padding-top: 12px;
+}
+
+.order-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #444;
+}
+
+.order-row.discount {
+  color: #2e7d32;
+}
+
+.order-row-total {
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
+  font-size: 15px;
+  color: #111;
+}

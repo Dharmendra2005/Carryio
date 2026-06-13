@@ -1,6 +1,8 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import "./ProductDetail.css";
+import { useEffect, useState, useMemo } from "react";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { useApp } from "../context/AppContext";
+import { fetchStoreProducts } from "../api/products";
+import "../Components/ProductDetail/ProductDetail.css";
 
 const PRODUCT_SPECS = [
   { label: "Availability", value: "In stock - 12 pieces left" },
@@ -27,20 +29,83 @@ const CUSTOMER_REVIEWS = [
   },
 ];
 
-export default function ProductDetail({
-  product,
-  isAuthenticated,
-  onLogin,
-  onSignup,
-  onAddToCart,
-}) {
+function slugify(value) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export default function ProductDetail() {
+  const { slug } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user, addToCart } = useApp();
+  const isAuthenticated = Boolean(user);
+
+  const [product, setProduct] = useState(location.state?.product || null);
+  const [loading, setLoading] = useState(!product);
+
+  useEffect(() => {
+    if (product) return;
+
+    let active = true;
+    fetchStoreProducts()
+      .then((products) => {
+        const found = products.find((p) => slugify(p.name) === slug);
+        if (active && found) {
+          setProduct(found);
+        }
+      })
+      .catch((err) => {
+        console.error("Error loading product detail:", err);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [slug, product]);
+
   const title = product?.name || "Selected product";
   const category = product?.cat || "bag";
   const price = product?.price || "Rs. 1,999";
-  const images = product?.images || [];                    // ← all uploaded images
-  const [activeImg, setActiveImg] = useState(0);          // ← which one is shown big
+  const images = product?.images || [];
+  const [activeImg, setActiveImg] = useState(0);
 
-  const checkoutState = { product: { title, category, price, image: images[0] } };
+  const handleBuyNow = () => {
+    const amount = Number(String(price).replace(/[^0-9]/g, ""));
+    const checkoutData = {
+      items: [{ name: title, price: amount, quantity: 1, cat: category }],
+      total: amount,
+      title: title,
+    };
+    navigate("/checkout/address", { state: checkoutData });
+  };
+
+  const handleAddToCartClick = () => {
+    addToCart({ ...product, name: title, cat: category, price });
+    navigate("/cart");
+  };
+
+  if (loading) {
+    return (
+      <div className="main" style={{ padding: 24, color: "#70665e" }}>
+        Loading product details…
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="main" style={{ padding: 24, color: "#70665e" }}>
+        <h2>Product not found</h2>
+        <Link to="/">Back to Home</Link>
+      </div>
+    );
+  }
 
   return (
     <div className="main" style={{ paddingTop: 24 }}>
@@ -51,7 +116,6 @@ export default function ProductDetail({
 
       <div className="product-detail">
         <div>
-
           {/* ── Main image / fallback icon ── */}
           <div
             style={{
@@ -79,7 +143,7 @@ export default function ProductDetail({
             )}
           </div>
 
-          {/* ── Thumbnail strip — only if more than 1 image ── */}
+          {/* ── Thumbnail strip ── */}
           {images.length > 1 && (
             <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
               {images.map((src, i) => (
@@ -169,17 +233,19 @@ export default function ProductDetail({
                 type="button"
                 className="btn-primary"
                 style={{ width: "100%", marginBottom: 10 }}
-                onClick={() => onAddToCart?.({ ...product, name: title, cat: category, price })}
+                onClick={handleAddToCartClick}
               >
                 Add to cart
               </button>
-              <Link
-                to="/checkout/address"
-                state={checkoutState}
-                className="btn-ghost product-continue"
+
+              <button
+                type="button"
+                className="btn-ghost"
+                style={{ width: "100%", marginBottom: 10, textAlign: "center", display: "block" }}
+                onClick={handleBuyNow}
               >
-                Continue shopping
-              </Link>
+                Buy now
+              </button>
 
               <div className="product-reviews">
                 <div className="product-reviews__top">
@@ -209,7 +275,7 @@ export default function ProductDetail({
                 type="button"
                 className="btn-primary"
                 style={{ width: "100%", marginBottom: 10 }}
-                onClick={onLogin}
+                onClick={() => navigate("/login", { state: { returnTo: location.pathname, product } })}
               >
                 Log in
               </button>
@@ -217,7 +283,7 @@ export default function ProductDetail({
                 type="button"
                 className="btn-ghost"
                 style={{ width: "100%" }}
-                onClick={onSignup}
+                onClick={() => navigate("/register", { state: { returnTo: location.pathname, product } })}
               >
                 Sign up
               </button>

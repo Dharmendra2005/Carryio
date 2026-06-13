@@ -121,15 +121,12 @@ function App() {
         credentials: "include",
       });
 
-      // Clear React state
       setUser(null);
       setCartItems([]);
 
-      // Clear localStorage
       localStorage.removeItem(AUTH_STORAGE_KEY);
       localStorage.removeItem(CART_STORAGE_KEY);
 
-      // Optional: redirect
       navigate("/");
     } catch (err) {
       console.error("Logout failed:", err);
@@ -162,48 +159,6 @@ function App() {
     navigate("/cart");
   };
 
-  // const handleAddToCart = async (product) => {
-  //   try {
-  //     const response = await fetch("http://localhost:3000/cart", {
-  //       method: "POST",
-  //       credentials: "include",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         productId: product._id, // IMPORTANT
-  //         name: product.name,
-  //         price: product.price,
-  //         quantity: 1,
-  //       }),
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error("Failed to add to cart");
-  //     }
-
-  //     setCartItems((currentItems) => {
-  //       const existingItem = currentItems.find(
-  //         (item) => item._id === product._id,
-  //       );
-
-  //       if (existingItem) {
-  //         return currentItems.map((item) =>
-  //           item._id === product._id
-  //             ? { ...item, quantity: item.quantity + 1 }
-  //             : item,
-  //         );
-  //       }
-
-  //       return [...currentItems, { ...product, quantity: 1 }];
-  //     });
-
-  //     navigate("/cart");
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // };
-
   const increaseCartItem = (name) => {
     setCartItems((currentItems) =>
       currentItems.map((item) =>
@@ -218,7 +173,7 @@ function App() {
         .map((item) =>
           item.name === name
             ? { ...item, quantity: Math.max(item.quantity - 1, 0) }
-            : item,
+            : item
         )
         .filter((item) => item.quantity > 0),
     );
@@ -367,11 +322,6 @@ function App() {
         <>
           <div className="hero">
             <div className="hero-img">
-              {/* <i
-            className="ti ti-briefcase"
-            aria-hidden="true"
-            style={{ fontSize: 64, color: "#d44d1c" }}
-          /> */}
               <img src={logo} alt="Carryio Logo" />
             </div>
             <div className="hero-text">
@@ -444,11 +394,24 @@ function App() {
                   onClick={() => handleProductClick(product)}
                 >
                   <div className="card-img" style={{ background: product.bg }}>
-                    <i
-                      className={`ti ${product.icon}`}
-                      style={{ color: product.color, fontSize: 48 }}
-                      aria-hidden="true"
-                    />
+                    {product.images?.[0] ? (
+                      <img
+                        src={product.images[0]}
+                        alt={product.name}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          borderRadius: "inherit",
+                        }}
+                      />
+                    ) : (
+                      <i
+                        className={`ti ${product.icon}`}
+                        style={{ color: product.color, fontSize: 48 }}
+                        aria-hidden="true"
+                      />
+                    )}
                   </div>
                   <div className="card-body">
                     <div className="card-cat">{product.cat}</div>
@@ -527,10 +490,7 @@ function App() {
                 </p>
                 <div className="social-row">
                   <div className="social-btn">
-                    <i
-                      className="ti ti-brand-instagram"
-                      aria-label="Instagram"
-                    />
+                    <i className="ti ti-brand-instagram" aria-label="Instagram" />
                   </div>
                   <div className="social-btn">
                     <i className="ti ti-brand-twitter" aria-label="Twitter" />
@@ -547,45 +507,23 @@ function App() {
               <div className="footer-col">
                 <h4>Shop</h4>
                 <ul>
-                  <li>
-                    <a>Tote bags</a>
-                  </li>
-                  <li>
-                    <a>Backpacks</a>
-                  </li>
-                  <li>
-                    <a>Wallets</a>
-                  </li>
-                  <li>
-                    <a>Clutches</a>
-                  </li>
-                  <li>
-                    <a>Sling bags</a>
-                  </li>
-                  <li>
-                    <a>Travel bags</a>
-                  </li>
+                  <li><a>Tote bags</a></li>
+                  <li><a>Backpacks</a></li>
+                  <li><a>Wallets</a></li>
+                  <li><a>Clutches</a></li>
+                  <li><a>Sling bags</a></li>
+                  <li><a>Travel bags</a></li>
                 </ul>
               </div>
 
               <div className="footer-col">
                 <h4>Company</h4>
                 <ul>
-                  <li>
-                    <a>About us</a>
-                  </li>
-                  <li>
-                    <a>Careers</a>
-                  </li>
-                  <li>
-                    <a>Press</a>
-                  </li>
-                  <li>
-                    <a>Blog</a>
-                  </li>
-                  <li>
-                    <a>Contact</a>
-                  </li>
+                  <li><a>About us</a></li>
+                  <li><a>Careers</a></li>
+                  <li><a>Press</a></li>
+                  <li><a>Blog</a></li>
+                  <li><a>Contact</a></li>
                 </ul>
               </div>
 
@@ -600,15 +538,9 @@ function App() {
                   </div>
                 </div>
                 <ul>
-                  <li>
-                    <a>Help center</a>
-                  </li>
-                  <li>
-                    <a>Track order</a>
-                  </li>
-                  <li>
-                    <a>Shipping info</a>
-                  </li>
+                  <li><a>Help center</a></li>
+                  <li><a>Track order</a></li>
+                  <li><a>Shipping info</a></li>
                 </ul>
               </div>
             </div>
