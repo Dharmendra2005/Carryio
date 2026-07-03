@@ -25,7 +25,8 @@ function UserLogin({ initialTab = "login", onAuthSuccess }) {
     const email = String(formData.get("email") || "").trim();
     const password = String(formData.get("password") || "").trim();
 
-    const response = await fetch("http://localhost:3000/users/login", {
+    const apiUrl = import.meta.env.VITE_API_URL || "";
+    const response = await fetch(`${apiUrl}/users/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

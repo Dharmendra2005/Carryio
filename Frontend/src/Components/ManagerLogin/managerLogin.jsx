@@ -15,7 +15,8 @@ export default function ManagerLogin() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("http://localhost:3000/manager/login", {
+      const apiUrl = import.meta.env.VITE_API_URL || "";
+      const response = await fetch(`${apiUrl}/manager/login`, {
         method: "POST",
         credentials: "include",
         headers: {

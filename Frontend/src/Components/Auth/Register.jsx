@@ -44,7 +44,8 @@ export default function Register({ onSwitchToLogin, onAuthSuccess }) {
     const lastName = String(formData.get("lastName") || "").trim();
     const email = String(formData.get("email") || "").trim();
 
-    const response = await fetch("http://localhost:3000/users/register", {
+    const apiUrl = import.meta.env.VITE_API_URL || "";
+    const response = await fetch(`${apiUrl}/users/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
