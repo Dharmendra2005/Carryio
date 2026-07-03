@@ -11,7 +11,7 @@ const userRouter = require("././routes/roleRouter/userRouter");
 const cartRouter = require("./routes/cartRouter");
 const managerRouter = require("./routes/roleRouter/managerRouter");
 const productRouter = require("./routes/productRouter");
-const rezopayRouter = require("./routes/rezoPayRouter");
+const rezopayRouter = require("./routes/rezopayRouter");
 
 const app = express();
 
