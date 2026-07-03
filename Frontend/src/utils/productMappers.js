@@ -27,6 +27,7 @@ export function mapProductForManager(product) {
     color: product.color || "#D85A30",
     tiIcon: product.tiIcon || "ti-briefcase",
     cat: product.cat || "bag",
+    images: product.images || [],
     createdAt: product.createdAt,
   };
 }
@@ -40,6 +41,7 @@ export function mapProductForStore(product) {
     bg: mapped.thumbBg,
     icon: mapped.tiIcon,
     badge: mapped.badge ? mapped.badge.toLowerCase() : "",
+    image: Array.isArray(product.images) ? product.images[0] || "" : "",
   };
 }
 

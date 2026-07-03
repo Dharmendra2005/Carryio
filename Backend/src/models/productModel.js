@@ -1,12 +1,48 @@
 const mongoose = require("mongoose");
 
 const CATEGORY_DEFAULTS = {
-  "Tote bags": { cat: "tote", thumbBg: "#FAECE7", icon: "👜", color: "#D85A30", tiIcon: "ti-briefcase" },
-  Backpacks: { cat: "backpack", thumbBg: "#E1F5EE", icon: "🎒", color: "#0F6E56", tiIcon: "ti-backpack" },
-  Wallets: { cat: "wallet", thumbBg: "#EEF2F8", icon: "👛", color: "#185FA5", tiIcon: "ti-wallet" },
-  Clutches: { cat: "clutch", thumbBg: "#FBEAF0", icon: "👝", color: "#993556", tiIcon: "ti-heart" },
-  "Sling bags": { cat: "sling", thumbBg: "#FAEEDA", icon: "👜", color: "#854F0B", tiIcon: "ti-bag" },
-  "Travel bags": { cat: "travel", thumbBg: "#EAF3DE", icon: "🧳", color: "#3B6D11", tiIcon: "ti-luggage" },
+  "Tote bags": {
+    cat: "tote",
+    thumbBg: "#FAECE7",
+    icon: "👜",
+    color: "#D85A30",
+    tiIcon: "ti-briefcase",
+  },
+  Backpacks: {
+    cat: "backpack",
+    thumbBg: "#E1F5EE",
+    icon: "🎒",
+    color: "#0F6E56",
+    tiIcon: "ti-backpack",
+  },
+  Wallets: {
+    cat: "wallet",
+    thumbBg: "#EEF2F8",
+    icon: "👛",
+    color: "#185FA5",
+    tiIcon: "ti-wallet",
+  },
+  Clutches: {
+    cat: "clutch",
+    thumbBg: "#FBEAF0",
+    icon: "👝",
+    color: "#993556",
+    tiIcon: "ti-heart",
+  },
+  "Sling bags": {
+    cat: "sling",
+    thumbBg: "#FAEEDA",
+    icon: "👜",
+    color: "#854F0B",
+    tiIcon: "ti-bag",
+  },
+  "Travel bags": {
+    cat: "travel",
+    thumbBg: "#EAF3DE",
+    icon: "🧳",
+    color: "#3B6D11",
+    tiIcon: "ti-luggage",
+  },
 };
 
 function getCategoryDefaults(category) {
@@ -46,7 +82,16 @@ const productSchema = new mongoose.Schema(
     freeShipping: { type: Boolean, default: true },
     cod: { type: Boolean, default: true },
     colors: { type: [String], default: ["#1a1a1a"] },
-    images: { type: [String], default: [] },   // ← added
+    images: {
+      type: [
+        {
+          data: { type: Buffer, required: true },
+          contentType: { type: String, required: true },
+          originalName: { type: String, default: "" },
+        },
+      ],
+      default: [],
+    },
     thumbBg: { type: String, default: "#F7F4F1" },
     icon: { type: String, default: "👜" },
     color: { type: String, default: "#D85A30" },

@@ -1,23 +1,20 @@
 const multer = require("multer");
-const path = require("path");
 const productModel = require("../models/productModel");
 const { getCategoryDefaults } = require("../models/productModel");
 
 // ── Multer setup ──────────────────────────────────────────────────────────────
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/products"),
-  filename: (req, file, cb) => {
-    const unique = `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
-    cb(null, unique + path.extname(file.originalname));
-  },
-});
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
   if (file.mimetype.startsWith("image/")) cb(null, true);
   else cb(new Error("Only image files allowed"), false);
 };
 
-const upload = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } });
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 
 // Export so the router can use it as middleware
 module.exports.uploadImages = upload.array("images", 3);
@@ -35,16 +32,46 @@ function parseBoolean(val, fallback = true) {
   return val === "true" || val === true;
 }
 
+function fileToImageDoc(file) {
+  return {
+    data: file.buffer,
+    contentType: file.mimetype,
+    originalName: file.originalname || "",
+  };
+}
+
+function imageDocToDataUrl(image) {
+  if (!image) return null;
+
+  const rawBuffer =
+    image.data && image.data.buffer ? image.data.buffer : image.data;
+  const buffer = Buffer.isBuffer(rawBuffer)
+    ? rawBuffer
+    : Buffer.from(rawBuffer || []);
+  const contentType = image.contentType || "image/jpeg";
+
+  return `data:${contentType};base64,${buffer.toString("base64")}`;
+}
+
+function serializeProduct(product) {
+  const plain = product?.toObject ? product.toObject() : product;
+
+  return {
+    ...plain,
+    images: Array.isArray(plain?.images)
+      ? plain.images.map(imageDocToDataUrl).filter(Boolean)
+      : [],
+  };
+}
+
 function buildProductPayload(body, files, managerId) {
-  const published = parseBoolean(body.published, true) && body.status !== "Draft";
+  const published =
+    parseBoolean(body.published, true) && body.status !== "Draft";
   const status = body.status || (published ? "Active" : "Draft");
   const category = body.category || "";
   const defaults = getCategoryDefaults(category);
 
-  // images uploaded via multer — build public URLs
-  const images = files && files.length > 0
-    ? files.map((f) => `/uploads/products/${f.filename}`)
-    : [];
+  const images = files && files.length > 0 ? files.map(fileToImageDoc) : [];
 
   return {
     name: String(body.name || "").trim(),
@@ -56,8 +83,10 @@ function buildProductPayload(body, files, managerId) {
     mrp: body.mrp ? Number(body.mrp) : null,
     stock: Number(body.stock || 0),
     sku: body.sku || "",
-    weight: body.weight !== undefined && body.weight !== null && body.weight !== ""
-      ? Number(body.weight) : null,
+    weight:
+      body.weight !== undefined && body.weight !== null && body.weight !== ""
+        ? Number(body.weight)
+        : null,
     badge: normalizeBadge(body.badge),
     sizes: body.sizes || "",
     material: body.material || "",
@@ -70,11 +99,16 @@ function buildProductPayload(body, files, managerId) {
     cod: parseBoolean(body.cod, true),
     colors: (() => {
       try {
-        const c = typeof body.colors === "string" ? JSON.parse(body.colors) : body.colors;
+        const c =
+          typeof body.colors === "string"
+            ? JSON.parse(body.colors)
+            : body.colors;
         return Array.isArray(c) ? c : ["#1a1a1a"];
-      } catch { return ["#1a1a1a"]; }
+      } catch {
+        return ["#1a1a1a"];
+      }
     })(),
-    images,                          // ← added
+    images, // ← added
     thumbBg: body.thumbBg || defaults.thumbBg,
     icon: body.icon || defaults.icon,
     color: body.color || defaults.color,
@@ -88,7 +122,7 @@ module.exports.getPublishedProducts = async (req, res) => {
     const products = await productModel
       .find({ published: true, status: "Active" })
       .sort({ createdAt: -1 });
-    return res.status(200).json({ products });
+    return res.status(200).json({ products: products.map(serializeProduct) });
   } catch (err) {
     console.error("Error fetching products:", err);
     return res.status(500).json({ message: "Server error" });
@@ -98,7 +132,7 @@ module.exports.getPublishedProducts = async (req, res) => {
 module.exports.getAllProducts = async (req, res) => {
   try {
     const products = await productModel.find().sort({ createdAt: -1 });
-    return res.status(200).json({ products });
+    return res.status(200).json({ products: products.map(serializeProduct) });
   } catch (err) {
     console.error("Error fetching manager products:", err);
     return res.status(500).json({ message: "Server error" });
@@ -109,7 +143,7 @@ module.exports.getProductById = async (req, res) => {
   try {
     const product = await productModel.findById(req.params.id);
     if (!product) return res.status(404).json({ message: "Product not found" });
-    return res.status(200).json({ product });
+    return res.status(200).json({ product: serializeProduct(product) });
   } catch (err) {
     console.error("Error fetching product:", err);
     return res.status(500).json({ message: "Server error" });
@@ -117,8 +151,8 @@ module.exports.getProductById = async (req, res) => {
 };
 
 module.exports.createProduct = async (req, res) => {
-  console.log("body:", req.body);       // ← add this
-  console.log("files:", req.files);     // ← add this
+  console.log("body:", req.body); // ← add this
+  console.log("files:", req.files); // ← add this
   const payload = buildProductPayload(req.body, req.files, req.user?.id);
 
   if (!payload.name)
@@ -128,7 +162,9 @@ module.exports.createProduct = async (req, res) => {
 
   try {
     const product = await productModel.create(payload);
-    return res.status(201).json({ message: "Product created", product });
+    return res
+      .status(201)
+      .json({ message: "Product created", product: serializeProduct(product) });
   } catch (err) {
     console.error("Error creating product:", err);
     return res.status(500).json({ message: err.message || "Server error" });
@@ -150,12 +186,18 @@ module.exports.updateProduct = async (req, res) => {
   }
 
   try {
-    const product = await productModel.findByIdAndUpdate(req.params.id, payload, {
-      new: true,
-      runValidators: true,
-    });
+    const product = await productModel.findByIdAndUpdate(
+      req.params.id,
+      payload,
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
     if (!product) return res.status(404).json({ message: "Product not found" });
-    return res.status(200).json({ message: "Product updated", product });
+    return res
+      .status(200)
+      .json({ message: "Product updated", product: serializeProduct(product) });
   } catch (err) {
     console.error("Error updating product:", err);
     return res.status(500).json({ message: err.message || "Server error" });
