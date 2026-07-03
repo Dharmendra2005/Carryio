@@ -25,7 +25,7 @@ connectDB();
 app.use(
   cors({
     origin: [
-      "http://localhost:5173",
+      "https://carryio-gfeb.onrender.com",
     ],
     credentials: true,
   }),
