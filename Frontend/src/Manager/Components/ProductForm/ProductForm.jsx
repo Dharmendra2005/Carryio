@@ -39,8 +39,12 @@ export default function ProductForm({
     sku: initial.sku ?? "",
     weight: initial.weight ?? "",
     badge: initial.badge ?? "None",
-    sizes: initial.sizes ?? "",
+    sizes: initial.sizes ?? "Medium",
     material: initial.material ?? "",
+    dispatch: initial.dispatch ?? "Ships within 24 hours",
+    delivery: initial.delivery ?? "2-5 business days across India",
+    returnPolicy: initial.returnPolicy ?? "Easy 30-day return available",
+    colorName: initial.colorName ?? "Classic tan",
     metaTitle: initial.metaTitle ?? "",
     metaDesc: initial.metaDesc ?? "",
     published: initial.published ?? true,
@@ -254,11 +258,21 @@ export default function ProductForm({
               </div>
               <div className="pf-grid">
                 <div className="fg">
+                  <label className="pf-label">Color Name</label>
+                  <input
+                    className="pf-input"
+                    type="text"
+                    placeholder="e.g. Classic tan"
+                    value={form.colorName}
+                    onChange={(e) => set("colorName", e.target.value)}
+                  />
+                </div>
+                <div className="fg">
                   <label className="pf-label">Sizes available</label>
                   <input
                     className="pf-input"
                     type="text"
-                    placeholder="e.g. S, M, L or One Size"
+                    placeholder="e.g. Medium, S, M, L"
                     value={form.sizes}
                     onChange={(e) => set("sizes", e.target.value)}
                   />
@@ -271,6 +285,47 @@ export default function ProductForm({
                     placeholder="e.g. Full-grain leather"
                     value={form.material}
                     onChange={(e) => set("material", e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Shipping & Return Details */}
+          <div className="section-card">
+            <div className="section-card__head">
+              <div className="section-card__title">Shipping & Return Specs</div>
+            </div>
+            <div className="section-card__body">
+              <div className="pf-grid pf-grid--3">
+                <div className="fg">
+                  <label className="pf-label">Dispatch Time</label>
+                  <input
+                    className="pf-input"
+                    type="text"
+                    placeholder="e.g. Ships within 24 hours"
+                    value={form.dispatch}
+                    onChange={(e) => set("dispatch", e.target.value)}
+                  />
+                </div>
+                <div className="fg">
+                  <label className="pf-label">Delivery Estimate</label>
+                  <input
+                    className="pf-input"
+                    type="text"
+                    placeholder="e.g. 2-5 business days across India"
+                    value={form.delivery}
+                    onChange={(e) => set("delivery", e.target.value)}
+                  />
+                </div>
+                <div className="fg">
+                  <label className="pf-label">Return Policy</label>
+                  <input
+                    className="pf-input"
+                    type="text"
+                    placeholder="e.g. Easy 30-day return available"
+                    value={form.returnPolicy}
+                    onChange={(e) => set("returnPolicy", e.target.value)}
                   />
                 </div>
               </div>

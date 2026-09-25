@@ -1,10 +1,52 @@
-const addressModel = require("../models/addressModel");
-const orderModel = require("../models/orderModel");
-const userModel = require("../models/roleModels/userModel");
+const prisma = require("../config/prisma");
 
 function toAmount(value) {
-  const amount = String(value).replace(/[^0-9]/g, "");
+  const amount = String(value).replace(/[^0-9.]/g, "");
   return Number(amount || 0);
+}
+
+function mapOrderStatus(status) {
+  if (status === "placed" || status === "paid" || status === "New") return "New";
+  if (status === "shipped" || status === "Shipped") return "Shipped";
+  if (status === "delivered" || status === "Delivered") return "Delivered";
+  return "Cancelled";
+}
+
+function formatOrderDate(date) {
+  const created = new Date(date);
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfYesterday = new Date(startOfToday);
+  startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+
+  if (created >= startOfToday) return "Today";
+  if (created >= startOfYesterday) return "Yesterday";
+
+  return created.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+  });
+}
+
+function formatManagerOrder(order) {
+  const customerName = order.user
+    ? `${order.user.firstName || ""} ${order.user.lastName || ""}`.trim()
+    : "Customer";
+
+  const itemsStr = (order.items || [])
+    .map((item) => `${item.name} × ${item.quantity}`)
+    .join(", ");
+
+  return {
+    id: order.id,
+    _id: order.id,
+    customer: customerName || "Customer",
+    items: itemsStr,
+    total: order.totalAmount,
+    date: formatOrderDate(order.createdAt),
+    status: mapOrderStatus(order.status),
+    createdAt: order.createdAt,
+  };
 }
 
 module.exports.createOrder = async (req, res) => {
@@ -31,9 +73,12 @@ module.exports.createOrder = async (req, res) => {
   }
 
   try {
-    const address = await addressModel.findOne({
-      _id: addressId,
-      user: req.user.id,
+    const userId = req.user.id;
+    const address = await prisma.address.findFirst({
+      where: {
+        id: addressId,
+        userId,
+      },
     });
 
     if (!address) {
@@ -49,36 +94,35 @@ module.exports.createOrder = async (req, res) => {
 
     const itemTotal = normalizedItems.reduce(
       (sum, item) => sum + item.price * item.quantity,
-      0,
+      0
     );
     const finalCodFee = paymentMethod === "cod" ? Number(codFee || 9) : 0;
     const finalPlatformFee = Number(platformFee || 35);
     const totalAmount = itemTotal + finalPlatformFee + finalCodFee;
 
-    const order = await orderModel.create({
-      user: req.user.id,
-      address: address._id,
-      items: normalizedItems,
-      paymentMethod,
-      itemTotal,
-      platformFee: finalPlatformFee,
-      codFee: finalCodFee,
-      totalAmount,
-    });
-
-    await userModel.findByIdAndUpdate(
-      req.user.id,
-      {
-        $push: {
-          orders: order._id,
+    const order = await prisma.order.create({
+      data: {
+        userId,
+        addressId: address.id,
+        paymentMethod,
+        itemTotal,
+        platformFee: finalPlatformFee,
+        codFee: finalCodFee,
+        totalAmount,
+        status: "New",
+        items: {
+          create: normalizedItems,
         },
       },
-      { new: true },
-    );
+      include: {
+        items: true,
+        address: true,
+      },
+    });
 
     return res.status(201).json({
       message: "Order placed successfully",
-      order,
+      order: { ...order, _id: order.id },
     });
   } catch (err) {
     console.error("Error creating order:", err);
@@ -87,69 +131,40 @@ module.exports.createOrder = async (req, res) => {
 };
 
 module.exports.getMyOrders = async (req, res) => {
-  const orders = await orderModel
-    .find({ user: req.user.id })
-    .populate("address")
-    .sort({ createdAt: -1 });
+  try {
+    const orders = await prisma.order.findMany({
+      where: { userId: req.user.id },
+      include: {
+        address: true,
+        items: true,
+        shipment: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
 
-  return res.status(200).json({
-    message: "Orders retrieved successfully",
-    orders,
-    totalOrders: orders.length,
-  });
+    const formatted = orders.map((order) => ({ ...order, _id: order.id }));
+
+    return res.status(200).json({
+      message: "Orders retrieved successfully",
+      orders: formatted,
+      totalOrders: formatted.length,
+    });
+  } catch (err) {
+    console.error("Error getting user orders:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
 };
-
-function mapOrderStatus(status) {
-  if (status === "placed" || status === "paid" || status === "New") return "New";
-  if (status === "shipped" || status === "Shipped") return "Shipped";
-  if (status === "delivered" || status === "Delivered") return "Delivered";
-  return "Cancelled";
-}
-
-function formatOrderDate(date) {
-  const created = new Date(date);
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOfYesterday = new Date(startOfToday);
-  startOfYesterday.setDate(startOfYesterday.getDate() - 1);
-
-  if (created >= startOfToday) return "Today";
-  if (created >= startOfYesterday) return "Yesterday";
-
-  return created.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-  });
-}
-
-function formatManagerOrder(order) {
-  const customer = order.user
-    ? `${order.user.firstName || ""} ${order.user.lastName || ""}`.trim()
-    : "Customer";
-
-  const items = (order.items || [])
-    .map((item) => `${item.name} × ${item.quantity}`)
-    .join(", ");
-
-  return {
-    id: order._id,
-    _id: order._id,
-    customer: customer || "Customer",
-    items,
-    total: order.totalAmount,
-    date: formatOrderDate(order.createdAt),
-    status: mapOrderStatus(order.status),
-    createdAt: order.createdAt,
-  };
-}
 
 module.exports.getAllOrders = async (req, res) => {
   try {
-    const orders = await orderModel
-      .find()
-      .populate("user", "firstName lastName email")
-      .populate("address")
-      .sort({ createdAt: -1 });
+    const orders = await prisma.order.findMany({
+      include: {
+        user: { select: { firstName: true, lastName: true, email: true } },
+        address: true,
+        items: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
 
     return res.status(200).json({
       orders: orders.map(formatManagerOrder),
@@ -170,13 +185,14 @@ module.exports.updateOrderStatus = async (req, res) => {
   }
 
   try {
-    const order = await orderModel
-      .findByIdAndUpdate(req.params.id, { status }, { new: true })
-      .populate("user", "firstName lastName email");
-
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
+    const order = await prisma.order.update({
+      where: { id: req.params.id },
+      data: { status },
+      include: {
+        user: { select: { firstName: true, lastName: true, email: true } },
+        items: true,
+      },
+    });
 
     return res.status(200).json({
       message: "Order status updated",

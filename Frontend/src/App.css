@@ -288,8 +288,9 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
 }
 .card {
   background: var(--color-background-primary);
@@ -297,6 +298,12 @@
   border-radius: var(--border-radius-lg);
   overflow: hidden;
   cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card:hover {
+  border-color: #d85a30;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(31, 26, 23, 0.08);
 }
 .card-img {
   height: 120px;

@@ -1,11 +1,13 @@
 const jwt = require("jsonwebtoken");
-
-const JWT_KEY = process.env.JWT_KEY || "carrrrrrrrrrrrrr";
+const env = require("../config/env");
 
 const generateToken = (user) => {
-  return jwt.sign({ email: user.email, id: user._id }, JWT_KEY, {
-    expiresIn: "1h",
-  });
+  const userId = user.id || user._id;
+  return jwt.sign(
+    { email: user.email, id: userId, role: user.role || "CUSTOMER" },
+    env.JWT_SECRET,
+    { expiresIn: env.JWT_EXPIRES_IN || "7d" }
+  );
 };
 
 module.exports = generateToken;

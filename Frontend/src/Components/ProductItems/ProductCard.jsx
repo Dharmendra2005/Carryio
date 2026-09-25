@@ -41,7 +41,8 @@ export default function ProductCard({ product, onClick }) {
             style={{
               width: "100%",
               height: "100%",
-              objectFit: "cover",
+              objectFit: "contain",
+              padding: 8,
               display: "block",
             }}
           />

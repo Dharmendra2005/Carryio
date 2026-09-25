@@ -1,10 +1,10 @@
-const userModel = require(".././models/roleModels/userModel");
 const bcrypt = require("bcrypt");
-const generateToken = require('../utils/generateToken');
-const blacklistTokenModel = require("../models/blacklistTokenModel");
+const prisma = require("../config/prisma");
+const generateToken = require("../utils/generateToken");
+
 /**
  * @name registerUser
- * @description register a new user expects username, email and password
+ * @description register a new user expects firstName, lastName, email and password
  * @access Public
  */
 module.exports.registerUser = async (req, res) => {
@@ -14,29 +14,33 @@ module.exports.registerUser = async (req, res) => {
     return res.status(400).json({ message: "All fields are required" });
   }
 
-  const user = await userModel.findOne({ email });
-  if (user) {
-    return res.status(400).json({ message: "User already exists" });
-  }
-
   try {
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new userModel({
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
+    const newUser = await prisma.user.create({
+      data: {
+        firstName,
+        lastName,
+        email,
+        password: hashedPassword,
+      },
     });
-    await newUser.save();
+
     let token = generateToken(newUser);
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: "lax",
     });
+
+    const { password: _, ...userWithoutPassword } = newUser;
     res.status(201).json({
       message: "User registered successfully",
       token,
-      user: newUser,
+      user: { ...userWithoutPassword, _id: newUser.id },
     });
   } catch (err) {
     console.error("Error registering user:", err);
@@ -55,45 +59,71 @@ module.exports.loginUser = async (req, res) => {
   if (!email || !password) {
     return res.status(400).json({ message: "All fields are required" });
   }
-  const user = await userModel.findOne({ email });
-  if (!user) {
-    return res.status(400).json({ message: "Invalid credentials" });
-  }
-  bcrypt.compare(password, user.password, (err, isMatch) => {
-    if (isMatch) {
-      let token = generateToken(user);
-      res.cookie("token", token, {
-        httpOnly: true,
-        sameSite: "lax",
-      });
-      return res.status(200).json({ message: "Login successful", token, user });
-    } else {
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
-  });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    let token = generateToken(user);
+    res.cookie("token", token, {
+      httpOnly: true,
+      sameSite: "lax",
+    });
+
+    const { password: _, ...userWithoutPassword } = user;
+    return res.status(200).json({
+      message: "Login successful",
+      token,
+      user: { ...userWithoutPassword, _id: user.id },
+    });
+  } catch (err) {
+    console.error("Error logging in user:", err);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 /**
- * @name logOut 
+ * @name logout
  * @description logout a user
  * @access Public
  */
 module.exports.logout = async (req, res) => {
   let token = req.cookies?.token;
-    if(token){
-        await blacklistTokenModel.create({token});
+  if (token) {
+    try {
+      await prisma.blacklistedToken.create({ data: { token } });
+    } catch (e) {
+      // ignore if duplicate
     }
-    res.clearCookie('token');
-    return res.status(200).json({
-    message : "User successfully LogOut !!"
+  }
+  res.clearCookie("token");
+  return res.status(200).json({
+    message: "User successfully LogOut !!",
   });
-}
-
+};
 
 module.exports.getme = async (req, res) => {
-  const user = await userModel.findById(req.user.id).select("-password");
-  return res.status(200).json({
-    message : "User data reterive successfully",
-    user
-  });
-}
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const { password: _, ...userWithoutPassword } = user;
+    return res.status(200).json({
+      message: "User data retrieved successfully",
+      user: { ...userWithoutPassword, _id: user.id },
+    });
+  } catch (err) {
+    console.error("Error retrieving user:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};

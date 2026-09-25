@@ -1,0 +1,281 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  CUSTOMER
+  DELIVERY_AGENT
+  ADMIN
+}
+
+model User {
+  id        String   @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String   @unique
+  password  String
+  contact   String?
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  addresses          Address[]
+  cartItems          CartItem[]
+  orders             Order[]
+  payments           Payment[]
+  shipments          Shipment[]          @relation("UserShipments")
+  assignedShipments  Shipment[]          @relation("AgentShipments")
+  auditLogs          AuditLog[]
+
+  @@map("users")
+}
+
+model Manager {
+  id        String   @id @default(uuid())
+  username  String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+
+  @@map("managers")
+}
+
+model Address {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName    String
+  mobile      String
+  addressLine String
+  city        String
+  state       String
+  pincode     String
+  landmark    String?  @default("")
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orders Order[]
+
+  @@map("addresses")
+}
+
+model Product {
+  id           String   @id @default(uuid())
+  name         String
+  category     String   @default("")
+  cat          String   @default("")
+  brand        String   @default("Carryio Originals")
+  description  String   @default("")
+  price        Float
+  mrp          Float?
+  stock        Int      @default(0)
+  sku          String   @default("")
+  weight       Float?
+  badge        String?
+  sizes        String   @default("")
+  material     String   @default("")
+  metaTitle    String   @default("")
+  metaDesc     String   @default("")
+  status       String   @default("Active")
+  published    Boolean  @default(true)
+  featured     Boolean  @default(false)
+  freeShipping Boolean  @default(true)
+  cod          Boolean  @default(true)
+  colors       String[] @default(["#1a1a1a"])
+  dispatch     String   @default("Ships within 24 hours")
+  delivery     String   @default("2-5 business days across India")
+  returnPolicy String   @default("Easy 30-day return available")
+  colorName    String   @default("Classic tan")
+  thumbBg      String   @default("#F7F4F1")
+  icon         String   @default("`👜`")
+  color        String   @default("#D85A30")
+  tiIcon       String   @default("ti-briefcase")
+  createdById  String?
+  createdBy    Manager? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  images ProductImage[]
+
+  @@map("products")
+}
+
+model ProductImage {
+  id           String   @id @default(uuid())
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  data         Bytes
+  contentType  String
+  originalName String   @default("")
+  createdAt    DateTime @default(now())
+
+  @@map("product_images")
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  price     Float
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("cart_items")
+}
+
+model Order {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  addressId     String
+  address       Address  @relation(fields: [addressId], references: [id])
+  paymentMethod String
+  itemTotal     Float
+  platformFee   Float    @default(35)
+  codFee        Float    @default(0)
+  totalAmount   Float
+  status        String   @default("New")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  items    OrderItem[]
+  payments Payment[]
+  shipment Shipment?
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id       String @id @default(uuid())
+  orderId  String
+  order    Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  name     String
+  category String @default("")
+  price    Float
+  quantity Int    @default(1)
+
+  @@map("order_items")
+}
+
+model Payment {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderId           String?
+  order             Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  razorpayOrderId   String
+  razorpayPaymentId String?  @default("")
+  razorpaySignature String?  @default("")
+  amount            Float
+  currency          String   @default("INR")
+  status            String   @default("created")
+  method            String   @default("razorpay")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  processedWebhooks ProcessedWebhook[]
+
+  @@map("payments")
+}
+
+model ProcessedWebhook {
+  id          String   @id @default(uuid())
+  paymentId   String
+  payment     Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  eventId     String
+  eventType   String
+  processedAt DateTime @default(now())
+
+  @@map("processed_webhooks")
+}
+
+enum ShipmentStatus {
+  ORDER_PLACED
+  PACKED
+  PICKED_UP
+  IN_TRANSIT
+  ARRIVED_AT_HUB
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+model Shipment {
+  id                String          @id @default(uuid())
+  orderId           String          @unique
+  order             Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User            @relation("UserShipments", fields: [userId], references: [id], onDelete: Cascade)
+  assignedAgentId   String?
+  assignedAgent     User?           @relation("AgentShipments", fields: [assignedAgentId], references: [id], onDelete: SetNull)
+  trackingNumber    String          @unique
+  carrier           String          @default("Carryio Express")
+  status            ShipmentStatus  @default(ORDER_PLACED)
+  currentLocation   String?         @default("Fulfillment Hub")
+  estimatedDelivery DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  trackingEvents    TrackingEvent[]
+  statusHistory     ShipmentStatusHistory[]
+
+  @@map("shipments")
+}
+
+model TrackingEvent {
+  id         String         @id @default(uuid())
+  shipmentId String
+  shipment   Shipment       @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  status     ShipmentStatus
+  location   String         @default("Processing Hub")
+  note       String         @default("")
+  updatedBy  String         @default("System")
+  createdAt  DateTime       @default(now())
+
+  @@map("tracking_events")
+}
+
+model ShipmentStatusHistory {
+  id         String   @id @default(uuid())
+  shipmentId String
+  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  status     String
+  updatedBy  String   @default("System")
+  note       String   @default("")
+  timestamp  DateTime @default(now())
+
+  @@map("shipment_status_histories")
+}
+
+model BlacklistedToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  createdAt DateTime @default(now())
+
+  @@map("blacklisted_tokens")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  resource  String
+  ipAddress String?
+  details   String?
+  createdAt DateTime @default(now())
+
+  @@map("audit_logs")
+}
+

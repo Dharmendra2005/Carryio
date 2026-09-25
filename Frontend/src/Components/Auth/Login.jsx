@@ -1,6 +1,6 @@
-import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { API_BASE } from "../../api/config";
 import Register from "./Register";
 import "./Login.css";
 
@@ -25,36 +25,56 @@ function UserLogin({ initialTab = "login", onAuthSuccess }) {
     const email = String(formData.get("email") || "").trim();
     const password = String(formData.get("password") || "").trim();
 
-    const apiUrl = import.meta.env.VITE_API_URL || "";
-    const response = await fetch(`${apiUrl}/users/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    });
+    try {
+      const response = await fetch(`${API_BASE}/api/v1/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
 
-    const data = await response.json();
+      const resData = await response.json().catch(() => ({}));
 
-    if (!response.ok) {
-      alert(data.message || "Login failed");
-      return;
+      if (!response.ok || (resData.success === false && !resData.token)) {
+        alert(resData.message || resData.error || "Invalid email or password");
+        return;
+      }
+
+      const userData = resData.data?.user || resData.user || {};
+      const token = resData.data?.token || resData.token;
+
+      if (token) {
+        localStorage.setItem("carryio_token", token);
+      }
+
+      const formattedUser = {
+        id: userData.id || userData._id,
+        name: `${userData.firstName || ""} ${userData.lastName || ""}`.trim() || email.split("@")[0] || "User",
+        email: userData.email || email,
+        role: userData.role || resData.data?.role || "CUSTOMER",
+        token,
+        rememberMe,
+      };
+
+      localStorage.setItem("carryio_user", JSON.stringify(formattedUser));
+
+      if (onAuthSuccess) {
+        onAuthSuccess(formattedUser);
+      }
+
+      navigate(returnTo, {
+        replace: true,
+        state: nextState,
+      });
+    } catch (err) {
+      alert("Login failed. Please verify that backend is running.");
+      console.error("Login submission error:", err);
     }
-
-    onAuthSuccess?.({
-      name: `${data.user.firstName} ${data.user.lastName}`,
-      email: data.user.email,
-      rememberMe,
-    });
-
-    navigate(returnTo, {
-      replace: true,
-      state: nextState,
-    });
   };
 
   return (

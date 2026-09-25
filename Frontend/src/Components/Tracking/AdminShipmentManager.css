@@ -1,0 +1,146 @@
+.admin-shipment-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  font-family: inherit;
+}
+
+.admin-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.admin-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #2c2520;
+}
+
+.admin-sub {
+  color: #70665e;
+}
+
+.admin-tab-row {
+  display: flex;
+  gap: 10px;
+}
+
+.admin-tab-btn {
+  background: #faf7f4;
+  border: 1px solid #e7dfd8;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-tab-btn.active {
+  background: #d85a30;
+  color: #ffffff;
+  border-color: #d85a30;
+}
+
+.admin-telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.metric-card {
+  background: #ffffff;
+  border: 1px solid #e7dfd8;
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #8c8075;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.metric-val {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #2c2520;
+}
+
+.text-red {
+  color: #e53e3e;
+}
+
+.text-green {
+  color: #278642;
+}
+
+.admin-table-card {
+  background: #ffffff;
+  border: 1px solid #e7dfd8;
+  border-radius: 14px;
+  overflow-x: auto;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.admin-table th {
+  background: #faf7f4;
+  padding: 14px 16px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: #70665e;
+  border-bottom: 1px solid #e7dfd8;
+}
+
+.admin-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0ea9433;
+  font-size: 0.9rem;
+}
+
+.status-tag {
+  background: #f3efe9;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+.assign-cell {
+  display: flex;
+  gap: 6px;
+}
+
+.admin-agent-input {
+  padding: 6px 10px;
+  border: 1px solid #e7dfd8;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.admin-assign-btn {
+  background: #2c2520;
+  color: #ffffff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+}

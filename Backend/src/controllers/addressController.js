@@ -1,5 +1,4 @@
-const addressModel = require("../models/addressModel");
-const userModel = require(".././models/roleModels/userModel");
+const prisma = require("../config/prisma");
 
 module.exports.createAddress = async (req, res) => {
   const {
@@ -18,38 +17,32 @@ module.exports.createAddress = async (req, res) => {
   }
 
   try {
+    const userId = req.user.id;
+
     if (isDefault) {
-      await addressModel.updateMany(
-        { user: req.user.id },
-        { $set: { isDefault: false } },
-      );
+      await prisma.address.updateMany({
+        where: { userId },
+        data: { isDefault: false },
+      });
     }
 
-    const address = await addressModel.create({
-      user: req.user.id,
-      fullName,
-      mobile,
-      addressLine,
-      city,
-      state,
-      pincode,
-      landmark,
-      isDefault: Boolean(isDefault),
-    });
-
-    await userModel.findByIdAndUpdate(
-      req.user.id,
-      {
-        $push: {
-          Address: address._id,
-        },
+    const address = await prisma.address.create({
+      data: {
+        userId,
+        fullName,
+        mobile,
+        addressLine,
+        city,
+        state,
+        pincode,
+        landmark: landmark || "",
+        isDefault: Boolean(isDefault),
       },
-      { new: true }
-    );
+    });
 
     return res.status(201).json({
       message: "Address saved successfully",
-      address,
+      address: { ...address, _id: address.id },
     });
   } catch (err) {
     console.error("Error saving address:", err);
@@ -58,12 +51,20 @@ module.exports.createAddress = async (req, res) => {
 };
 
 module.exports.getMyAddresses = async (req, res) => {
-  const addresses = await addressModel
-    .find({ user: req.user.id })
-    .sort({ isDefault: -1, createdAt: -1 });
+  try {
+    const addresses = await prisma.address.findMany({
+      where: { userId: req.user.id },
+      orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
+    });
 
-  return res.status(200).json({
-    message: "Addresses retrieved successfully",
-    addresses,
-  });
+    const formatted = addresses.map((addr) => ({ ...addr, _id: addr.id }));
+
+    return res.status(200).json({
+      message: "Addresses retrieved successfully",
+      addresses: formatted,
+    });
+  } catch (err) {
+    console.error("Error retrieving addresses:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
 };

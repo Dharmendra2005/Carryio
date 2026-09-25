@@ -10,6 +10,10 @@ import Cart from "./Components/Cart/Cart";
 import CheckoutAddress from "./Components/Checkout/CheckoutAddress";
 import CheckoutPayment from "./Components/Checkout/CheckoutPayment";
 import ProductDetail from "./Components/ProductDetail/ProductDetail";
+import AllProducts from "./pages/AllProducts";
+import TrackingPage from "./Components/Tracking/TrackingPage";
+import DeliveryAgentDashboard from "./Components/Tracking/DeliveryAgentDashboard";
+import AdminShipmentManager from "./Components/Tracking/AdminShipmentManager";
 import { fetchStoreProducts } from "./api/products";
 
 const CATEGORIES = [
@@ -72,6 +76,7 @@ function App() {
       localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
     } else {
       localStorage.removeItem(AUTH_STORAGE_KEY);
+      localStorage.removeItem("carryio_token");
     }
   }, [user]);
 
@@ -116,10 +121,13 @@ function App() {
     if (!confirmLogout) return;
 
     try {
-      await fetch("http://localhost:3000/logout", {
+      const token = localStorage.getItem("carryio_token");
+      await fetch("http://localhost:3000/api/v1/auth/logout", {
         method: "POST",
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
         credentials: "include",
       });
+
 
       setUser(null);
       setCartItems([]);
@@ -197,6 +205,15 @@ function App() {
         <input type="text" placeholder="Search bags, wallets, accessories…" />
       </div>
       <div className="nav-actions">
+        <button
+          type="button"
+          className="btn-ghost"
+          onClick={() => navigate("/track")}
+          style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}
+        >
+          <i className="ti ti-map-pin" aria-hidden="true" />
+          Track Order
+        </button>
         <button
           type="button"
           className="nav-cart"
@@ -299,6 +316,12 @@ function App() {
             onAuthSuccess={handleAuthSuccess}
           />
         </div>
+      ) : location.pathname === "/track" ? (
+        <TrackingPage />
+      ) : location.pathname === "/agent-dashboard" ? (
+        <DeliveryAgentDashboard user={user} />
+      ) : location.pathname === "/admin-shipments" ? (
+        <AdminShipmentManager user={user} />
       ) : location.pathname === "/checkout/address" ? (
         <CheckoutAddress />
       ) : location.pathname === "/checkout/payment" ? (
@@ -309,6 +332,13 @@ function App() {
           onIncrease={increaseCartItem}
           onDecrease={decreaseCartItem}
           onRemove={removeCartItem}
+        />
+      ) : location.pathname === "/products" ? (
+        <AllProducts
+          products={products}
+          loading={productsLoading}
+          onProductClick={handleProductClick}
+          onAddToCart={handleAddToCart}
         />
       ) : location.pathname.startsWith("/product/") ? (
         <ProductDetail
@@ -333,7 +363,7 @@ function App() {
                 accessories. Crafted to last.
               </p>
               <div className="hero-actions">
-                <button type="button" className="btn-primary">
+                <button type="button" className="btn-primary" onClick={() => navigate("/products")}>
                   Shop now
                 </button>
                 <button type="button" className="btn-ghost">
@@ -375,7 +405,7 @@ function App() {
             </div>
             <div className="section-top">
               <span className="section-title">Featured products</span>
-              <span className="section-view-all">View all →</span>
+              <span className="section-view-all" onClick={() => navigate(active === "all" ? "/products" : `/products?cat=${active}`)} style={{ cursor: "pointer" }}>View all →</span>
             </div>
             <div className="grid" id="grid">
               {productsLoading ? (
@@ -507,12 +537,12 @@ function App() {
               <div className="footer-col">
                 <h4>Shop</h4>
                 <ul>
-                  <li><a>Tote bags</a></li>
-                  <li><a>Backpacks</a></li>
-                  <li><a>Wallets</a></li>
-                  <li><a>Clutches</a></li>
-                  <li><a>Sling bags</a></li>
-                  <li><a>Travel bags</a></li>
+                  <li><a onClick={() => navigate("/products?cat=tote")} style={{ cursor: "pointer" }}>Tote bags</a></li>
+                  <li><a onClick={() => navigate("/products?cat=backpack")} style={{ cursor: "pointer" }}>Backpacks</a></li>
+                  <li><a onClick={() => navigate("/products?cat=wallet")} style={{ cursor: "pointer" }}>Wallets</a></li>
+                  <li><a onClick={() => navigate("/products?cat=clutch")} style={{ cursor: "pointer" }}>Clutches</a></li>
+                  <li><a onClick={() => navigate("/products?cat=sling")} style={{ cursor: "pointer" }}>Sling bags</a></li>
+                  <li><a onClick={() => navigate("/products?cat=travel")} style={{ cursor: "pointer" }}>Travel bags</a></li>
                 </ul>
               </div>
 

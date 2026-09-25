@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { API_BASE } from "../../api/config";
 import "./Register.css";
 
 function getPasswordStrength(value) {
@@ -44,41 +45,53 @@ export default function Register({ onSwitchToLogin, onAuthSuccess }) {
     const lastName = String(formData.get("lastName") || "").trim();
     const email = String(formData.get("email") || "").trim();
 
-    const apiUrl = import.meta.env.VITE_API_URL || "";
-    const response = await fetch(`${apiUrl}/users/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        firstName,
-        lastName,
+    try {
+      const response = await fetch(`${API_BASE}/api/v1/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          password,
+        }),
+      });
+
+      const resData = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        alert(
+          resData.message ||
+            resData.error ||
+            `Registration failed (${response.status})`,
+        );
+        return;
+      }
+
+      const userData = resData.data?.user || resData.user || {};
+
+      alert("Account created successfully!");
+      onSwitchToLogin();
+
+      onAuthSuccess?.({
+        id: userData.id,
+        name:
+          `${firstName} ${lastName}`.trim() || email.split("@")[0] || "User",
         email,
-        password,
-      }),
-    });
+        rememberMe: true,
+      });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      alert(data.message || "Registration failed");
-      return;
+      navigate(returnTo, {
+        replace: true,
+        state: nextState,
+      });
+    } catch (err) {
+      alert("Unable to create account. Please check backend connection.");
+      console.error("Registration error:", err);
     }
-
-    alert("Account created successfully");
-    onSwitchToLogin();
-
-    onAuthSuccess?.({
-      name: `${firstName} ${lastName}`.trim() || email.split("@")[0] || "Guest",
-      email,
-      rememberMe: true,
-    });
-
-    navigate(returnTo, {
-      replace: true,
-      state: nextState,
-    });
   };
 
   const passwordMismatch =

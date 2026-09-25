@@ -89,7 +89,7 @@ export default function Cart() {
                     <img
                       src={item.images[0]}
                       alt={item.name}
-                      style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }}
+                      style={{ width: "100%", height: "100%", objectFit: "contain", padding: 4, borderRadius: "inherit" }}
                     />
                   ) : (
                     <i

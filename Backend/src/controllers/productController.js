@@ -1,6 +1,5 @@
 const multer = require("multer");
-const productModel = require("../models/productModel");
-const { getCategoryDefaults } = require("../models/productModel");
+const prisma = require("../config/prisma");
 
 // ── Multer setup ──────────────────────────────────────────────────────────────
 const storage = multer.memoryStorage();
@@ -16,10 +15,26 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-// Export so the router can use it as middleware
 module.exports.uploadImages = upload.array("images", 3);
 
 // ─────────────────────────────────────────────────────────────────────────────
+
+function getCategoryDefaults(category) {
+  const cat = (category || "").toLowerCase();
+  if (cat.includes("luggage") || cat.includes("trolley")) {
+    return { cat: "Luggage", icon: "🧳", color: "#2B5329", tiIcon: "ti-briefcase", thumbBg: "#F0F4EF" };
+  }
+  if (cat.includes("backpack")) {
+    return { cat: "Backpack", icon: "🎒", color: "#1D4ED8", tiIcon: "ti-bag", thumbBg: "#EFF6FF" };
+  }
+  if (cat.includes("duffel")) {
+    return { cat: "Duffels", icon: "👝", color: "#D97706", tiIcon: "ti-briefcase", thumbBg: "#FFFBEB" };
+  }
+  if (cat.includes("accessory") || cat.includes("accessories")) {
+    return { cat: "Accessories", icon: "👛", color: "#7C3AED", tiIcon: "ti-tag", thumbBg: "#F5F3FF" };
+  }
+  return { cat: "Bags", icon: "👜", color: "#D85A30", tiIcon: "ti-briefcase", thumbBg: "#F7F4F1" };
+}
 
 function normalizeBadge(badge) {
   if (!badge || badge === "None") return null;
@@ -32,46 +47,32 @@ function parseBoolean(val, fallback = true) {
   return val === "true" || val === true;
 }
 
-function fileToImageDoc(file) {
-  return {
-    data: file.buffer,
-    contentType: file.mimetype,
-    originalName: file.originalname || "",
-  };
-}
-
 function imageDocToDataUrl(image) {
   if (!image) return null;
-
-  const rawBuffer =
-    image.data && image.data.buffer ? image.data.buffer : image.data;
-  const buffer = Buffer.isBuffer(rawBuffer)
-    ? rawBuffer
-    : Buffer.from(rawBuffer || []);
+  const rawData = image.data;
+  const buffer = Buffer.isBuffer(rawData) ? rawData : Buffer.from(rawData || []);
   const contentType = image.contentType || "image/jpeg";
-
   return `data:${contentType};base64,${buffer.toString("base64")}`;
 }
 
 function serializeProduct(product) {
-  const plain = product?.toObject ? product.toObject() : product;
+  if (!product) return null;
+  const images = Array.isArray(product.images)
+    ? product.images.map(imageDocToDataUrl).filter(Boolean)
+    : [];
 
   return {
-    ...plain,
-    images: Array.isArray(plain?.images)
-      ? plain.images.map(imageDocToDataUrl).filter(Boolean)
-      : [],
+    ...product,
+    _id: product.id,
+    images,
   };
 }
 
-function buildProductPayload(body, files, managerId) {
-  const published =
-    parseBoolean(body.published, true) && body.status !== "Draft";
+function buildProductData(body, managerId) {
+  const published = parseBoolean(body.published, true) && body.status !== "Draft";
   const status = body.status || (published ? "Active" : "Draft");
   const category = body.category || "";
   const defaults = getCategoryDefaults(category);
-
-  const images = files && files.length > 0 ? files.map(fileToImageDoc) : [];
 
   return {
     name: String(body.name || "").trim(),
@@ -83,10 +84,7 @@ function buildProductPayload(body, files, managerId) {
     mrp: body.mrp ? Number(body.mrp) : null,
     stock: Number(body.stock || 0),
     sku: body.sku || "",
-    weight:
-      body.weight !== undefined && body.weight !== null && body.weight !== ""
-        ? Number(body.weight)
-        : null,
+    weight: body.weight !== undefined && body.weight !== null && body.weight !== "" ? Number(body.weight) : null,
     badge: normalizeBadge(body.badge),
     sizes: body.sizes || "",
     material: body.material || "",
@@ -99,72 +97,87 @@ function buildProductPayload(body, files, managerId) {
     cod: parseBoolean(body.cod, true),
     colors: (() => {
       try {
-        const c =
-          typeof body.colors === "string"
-            ? JSON.parse(body.colors)
-            : body.colors;
+        const c = typeof body.colors === "string" ? JSON.parse(body.colors) : body.colors;
         return Array.isArray(c) ? c : ["#1a1a1a"];
       } catch {
         return ["#1a1a1a"];
       }
     })(),
-    images, // ← added
+    dispatch: body.dispatch || "Ships within 24 hours",
+    delivery: body.delivery || "2-5 business days across India",
+    returnPolicy: body.returnPolicy || "Easy 30-day return available",
+    colorName: body.colorName || "Classic tan",
     thumbBg: body.thumbBg || defaults.thumbBg,
     icon: body.icon || defaults.icon,
     color: body.color || defaults.color,
     tiIcon: body.tiIcon || defaults.tiIcon,
-    createdBy: managerId || null,
+    createdById: managerId || null,
   };
 }
 
 module.exports.getPublishedProducts = async (req, res) => {
   try {
-    const products = await productModel
-      .find({ published: true, status: "Active" })
-      .sort({ createdAt: -1 });
+    const products = await prisma.product.findMany({
+      where: { published: true, status: "Active" },
+      include: { images: true },
+      orderBy: { createdAt: "desc" },
+    });
     return res.status(200).json({ products: products.map(serializeProduct) });
   } catch (err) {
-    console.error("Error fetching products:", err);
+    console.error("Error fetching published products:", err);
     return res.status(500).json({ message: "Server error" });
   }
 };
 
 module.exports.getAllProducts = async (req, res) => {
   try {
-    const products = await productModel.find().sort({ createdAt: -1 });
+    const products = await prisma.product.findMany({
+      include: { images: true },
+      orderBy: { createdAt: "desc" },
+    });
     return res.status(200).json({ products: products.map(serializeProduct) });
   } catch (err) {
-    console.error("Error fetching manager products:", err);
+    console.error("Error fetching all products:", err);
     return res.status(500).json({ message: "Server error" });
   }
 };
 
 module.exports.getProductById = async (req, res) => {
   try {
-    const product = await productModel.findById(req.params.id);
+    const product = await prisma.product.findUnique({
+      where: { id: req.params.id },
+      include: { images: true },
+    });
     if (!product) return res.status(404).json({ message: "Product not found" });
     return res.status(200).json({ product: serializeProduct(product) });
   } catch (err) {
-    console.error("Error fetching product:", err);
+    console.error("Error fetching product by ID:", err);
     return res.status(500).json({ message: "Server error" });
   }
 };
 
 module.exports.createProduct = async (req, res) => {
-  console.log("body:", req.body); // ← add this
-  console.log("files:", req.files); // ← add this
-  const payload = buildProductPayload(req.body, req.files, req.user?.id);
+  const data = buildProductData(req.body, req.user?.id);
 
-  if (!payload.name)
-    return res.status(400).json({ message: "Product name is required" });
-  if (!payload.price || payload.price <= 0)
-    return res.status(400).json({ message: "Valid sale price is required" });
+  if (!data.name) return res.status(400).json({ message: "Product name is required" });
+  if (!data.price || data.price <= 0) return res.status(400).json({ message: "Valid sale price is required" });
 
   try {
-    const product = await productModel.create(payload);
-    return res
-      .status(201)
-      .json({ message: "Product created", product: serializeProduct(product) });
+    const product = await prisma.product.create({
+      data: {
+        ...data,
+        images: req.files && req.files.length > 0 ? {
+          create: req.files.map((file) => ({
+            data: file.buffer,
+            contentType: file.mimetype,
+            originalName: file.originalname || "",
+          })),
+        } : undefined,
+      },
+      include: { images: true },
+    });
+
+    return res.status(201).json({ message: "Product created", product: serializeProduct(product) });
   } catch (err) {
     console.error("Error creating product:", err);
     return res.status(500).json({ message: err.message || "Server error" });
@@ -172,32 +185,35 @@ module.exports.createProduct = async (req, res) => {
 };
 
 module.exports.updateProduct = async (req, res) => {
-  const payload = buildProductPayload(req.body, req.files, req.user?.id);
-  delete payload.createdBy;
+  const data = buildProductData(req.body, req.user?.id);
+  delete data.createdById;
 
-  if (!payload.name)
-    return res.status(400).json({ message: "Product name is required" });
-  if (!payload.price || payload.price <= 0)
-    return res.status(400).json({ message: "Valid sale price is required" });
-
-  // if no new images uploaded, keep existing ones
-  if (payload.images.length === 0) {
-    delete payload.images;
-  }
+  if (!data.name) return res.status(400).json({ message: "Product name is required" });
+  if (!data.price || data.price <= 0) return res.status(400).json({ message: "Valid sale price is required" });
 
   try {
-    const product = await productModel.findByIdAndUpdate(
-      req.params.id,
-      payload,
-      {
-        new: true,
-        runValidators: true,
+    const productId = req.params.id;
+
+    if (req.files && req.files.length > 0) {
+      await prisma.productImage.deleteMany({ where: { productId } });
+    }
+
+    const product = await prisma.product.update({
+      where: { id: productId },
+      data: {
+        ...data,
+        images: req.files && req.files.length > 0 ? {
+          create: req.files.map((file) => ({
+            data: file.buffer,
+            contentType: file.mimetype,
+            originalName: file.originalname || "",
+          })),
+        } : undefined,
       },
-    );
-    if (!product) return res.status(404).json({ message: "Product not found" });
-    return res
-      .status(200)
-      .json({ message: "Product updated", product: serializeProduct(product) });
+      include: { images: true },
+    });
+
+    return res.status(200).json({ message: "Product updated", product: serializeProduct(product) });
   } catch (err) {
     console.error("Error updating product:", err);
     return res.status(500).json({ message: err.message || "Server error" });
@@ -206,8 +222,9 @@ module.exports.updateProduct = async (req, res) => {
 
 module.exports.deleteProduct = async (req, res) => {
   try {
-    const product = await productModel.findByIdAndDelete(req.params.id);
-    if (!product) return res.status(404).json({ message: "Product not found" });
+    await prisma.product.delete({
+      where: { id: req.params.id },
+    });
     return res.status(200).json({ message: "Product deleted" });
   } catch (err) {
     console.error("Error deleting product:", err);

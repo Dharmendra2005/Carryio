@@ -1,62 +1,61 @@
-const CartItem = require("../models/cartModel");
-const userModel = require(".././models/roleModels/userModel");
+const prisma = require("../config/prisma");
 
 module.exports.addToCart = async (req, res) => {
   try {
-    console.log("Request Body:", req.body);
-    console.log("User ID:", req.user.id);
     const userId = req.user.id;
+    const { name, price, quantity = 1 } = req.body;
 
-    const { productId, name, price, quantity = 1 } = req.body;
-    console.log("Product ID:", productId);
-
-    // Check if already exists
-    let item = await CartItem.findOne({
-      userId,
-      productId,
+    // Check if item exists in user's cart
+    const existing = await prisma.cartItem.findFirst({
+      where: {
+        userId,
+        name,
+      },
     });
 
-    if (item) {
-      item.quantity += quantity;
-      await item.save();
-    } else {
-      item = await CartItem.create({
-        userId,
-        productId,
-        name,
-        price,
-        quantity,
-      });
-
-      await userModel.findByIdAndUpdate(
-        userId,
-        {
-          $push: {
-            cart: item._id,
-          },
+    let item;
+    if (existing) {
+      item = await prisma.cartItem.update({
+        where: { id: existing.id },
+        data: {
+          quantity: existing.quantity + Number(quantity),
         },
-        { new: true },
-      );
+      });
+    } else {
+      item = await prisma.cartItem.create({
+        data: {
+          userId,
+          name: name || "Cart Item",
+          price: Number(price || 0),
+          quantity: Number(quantity),
+        },
+      });
     }
 
-    res.status(200).json(item);
+    res.status(200).json({ ...item, _id: item.id });
   } catch (err) {
+    console.error("Error adding to cart:", err);
     res.status(500).json({
-      message: err.message,
+      message: err.message || "Server error",
     });
   }
 };
 
 module.exports.getCartItems = async (req, res) => {
   try {
-    const items = await CartItem.find({
-      userId: req.user.id,
+    const items = await prisma.cartItem.findMany({
+      where: {
+        userId: req.user.id,
+      },
+      orderBy: { createdAt: "desc" },
     });
 
-    res.json(items);
+    const formatted = items.map((item) => ({ ...item, _id: item.id }));
+    res.json(formatted);
   } catch (err) {
+    console.error("Error fetching cart items:", err);
     res.status(500).json({
-      message: err.message,
+      message: err.message || "Server error",
     });
   }
 };

@@ -80,7 +80,13 @@ export default function Home() {
 
         <div className="section-top">
           <span className="section-title">Featured products</span>
-          <span className="section-view-all">View all →</span>
+          <span
+            className="section-view-all"
+            onClick={() => navigate(active === "all" ? "/products" : `/products?cat=${active}`)}
+            style={{ cursor: "pointer" }}
+          >
+            View all →
+          </span>
         </div>
 
         {productsLoading ? (

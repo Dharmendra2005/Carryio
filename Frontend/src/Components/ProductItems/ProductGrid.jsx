@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import ProductCard from "./ProductCard.jsx";
 import "./ProductGrid.css";
 
@@ -23,7 +24,10 @@ const DEFAULT_PRODUCTS = [
 export default function ProductGrid({
   products = DEFAULT_PRODUCTS,
   onCardClick = () => {},
+  onViewAllClick,
 }) {
+  const navigate = useNavigate();
+
   if (products.length === 0) {
     return (
       <div className="product-grid__empty">
@@ -36,7 +40,12 @@ export default function ProductGrid({
     <div className="product-grid__wrapper">
       <div className="product-grid__header">
         <h2 className="product-grid__title">Featured Products</h2>
-        <span className="product-grid__view-all">View all →</span>
+        <span
+          className="product-grid__view-all"
+          onClick={() => (onViewAllClick ? onViewAllClick() : navigate("/products"))}
+        >
+          View all →
+        </span>
       </div>
 
       <div className="product-grid">

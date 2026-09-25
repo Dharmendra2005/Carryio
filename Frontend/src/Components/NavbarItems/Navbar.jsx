@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { API_BASE } from "../../api/config";
 import "./Navbar.css";
 
 export default function Navbar({ user, onLogout }) {
@@ -6,15 +7,27 @@ export default function Navbar({ user, onLogout }) {
 
   const handleLogout = async () => {
     if (window.confirm("Are you sure you want to log out?")) {
-        await fetch("http://localhost:3000/logout", {
-            method: "POST",
-            credentials: "include",
+      try {
+        const token = localStorage.getItem("carryio_token");
+        await fetch(`${API_BASE}/api/v1/auth/logout`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+          credentials: "include",
         });
-
-        onLogout();   // update parent state
+      } catch (err) {
+        console.error("Logout request error:", err);
+      } finally {
+        localStorage.removeItem("carryio_user");
+        localStorage.removeItem("carryio_token");
+        if (onLogout) onLogout();
         navigate("/");
+      }
     }
-   };
+  };
+
   return (
     <header className="navbar">
       {/* ── Logo ── */}
@@ -40,19 +53,19 @@ export default function Navbar({ user, onLogout }) {
 
       {/* ── Actions ── */}
       <nav className="navbar__actions">
-        <button className="navbar__cart" onClick={handleLogout}>
+        <button className="navbar__cart" onClick={() => navigate("/cart")}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
             <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
             <line x1="3" y1="6" x2="21" y2="6" />
             <path d="M16 10a4 4 0 0 1-8 0" />
           </svg>
-          Cart (0)
+          Cart
         </button>
 
         {user ? (
           <>
             <span className="navbar__username">Hi, {user.name}</span>
-            <button className="navbar__btn navbar__btn--ghost" onClick={onLogout}>
+            <button className="navbar__btn navbar__btn--ghost" onClick={handleLogout}>
               Log out
             </button>
           </>

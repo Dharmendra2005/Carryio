@@ -1,33 +1,8 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { fetchStoreProducts } from "../api/products";
 import "../Components/ProductDetail/ProductDetail.css";
-
-const PRODUCT_SPECS = [
-  { label: "Availability", value: "In stock - 12 pieces left" },
-  { label: "Dispatch", value: "Ships within 24 hours" },
-  { label: "Delivery", value: "2-5 business days across India" },
-  { label: "Return", value: "Easy 30-day return available" },
-];
-
-const CUSTOMER_REVIEWS = [
-  {
-    name: "Aarav Mehta",
-    rating: "5.0",
-    text: "The finish feels premium and the stitching is neat. It fits my daily essentials without looking bulky.",
-  },
-  {
-    name: "Priya Nair",
-    rating: "4.8",
-    text: "Color matched the photos and delivery was quick. The inside pockets make it easy to organize small items.",
-  },
-  {
-    name: "Neha Sharma",
-    rating: "4.9",
-    text: "Good value for the price. I have used it for work and weekend outings, and it still holds its shape well.",
-  },
-];
 
 function slugify(value) {
   return value
@@ -69,14 +44,18 @@ export default function ProductDetail() {
     };
   }, [slug, product]);
 
-  const title = product?.name || "Selected product";
-  const category = product?.cat || "bag";
-  const price = product?.price || "Rs. 1,999";
+  const title = product?.name || "Selected Product";
+  const category = product?.category || product?.cat || "Bag";
+  const price = typeof product?.price === "number" 
+    ? `Rs. ${product.price.toLocaleString("en-IN")}` 
+    : (product?.price || "Rs. 0");
   const images = product?.images || [];
   const [activeImg, setActiveImg] = useState(0);
 
   const handleBuyNow = () => {
-    const amount = Number(String(price).replace(/[^0-9]/g, ""));
+    const amount = typeof product?.price === "number" 
+      ? product.price 
+      : Number(String(price).replace(/[^0-9]/g, ""));
     const checkoutData = {
       items: [{ name: title, price: amount, quantity: 1, cat: category }],
       total: amount,
@@ -86,7 +65,7 @@ export default function ProductDetail() {
   };
 
   const handleAddToCartClick = () => {
-    addToCart({ ...product, name: title, cat: category, price });
+    addToCart({ ...product, name: title, cat: category, price: product?.price });
     navigate("/cart");
   };
 
@@ -107,6 +86,17 @@ export default function ProductDetail() {
     );
   }
 
+  const stockText = product.stock !== undefined && product.stock !== null
+    ? (Number(product.stock) > 0 ? `In stock - ${product.stock} pieces left` : "Out of stock")
+    : "In stock";
+
+  const productSpecs = [
+    { label: "Availability", value: product.availability || stockText },
+    { label: "Dispatch", value: product.dispatch || "Ships within 24 hours" },
+    { label: "Delivery", value: product.delivery || "2-5 business days across India" },
+    { label: "Return", value: product.returnPolicy || "Easy 30-day return available" },
+  ];
+
   return (
     <div className="main" style={{ paddingTop: 24 }}>
       <div className="section-top">
@@ -121,7 +111,7 @@ export default function ProductDetail() {
             style={{
               height: 320,
               borderRadius: 18,
-              background: product?.bg || "#F7F1ED",
+              background: product?.thumbBg || product?.bg || "#F7F1ED",
               display: "grid",
               placeItems: "center",
               marginBottom: 12,
@@ -132,11 +122,11 @@ export default function ProductDetail() {
               <img
                 src={images[activeImg]}
                 alt={title}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                style={{ width: "100%", height: "100%", objectFit: "contain", padding: 12 }}
               />
             ) : (
               <i
-                className={`ti ${product?.icon || "ti-briefcase"}`}
+                className={`ti ${product?.tiIcon || product?.icon || "ti-briefcase"}`}
                 style={{ fontSize: 84, color: product?.color || "#D85A30" }}
                 aria-hidden="true"
               />
@@ -157,16 +147,16 @@ export default function ProductDetail() {
                     borderRadius: 10,
                     overflow: "hidden",
                     border: activeImg === i ? "2px solid #D85A30" : "2px solid transparent",
-                    padding: 0,
+                    padding: 4,
                     cursor: "pointer",
                     flexShrink: 0,
-                    background: product?.bg || "#F7F1ED",
+                    background: product?.thumbBg || product?.bg || "#F7F1ED",
                   }}
                 >
                   <img
                     src={src}
                     alt={`view-${i}`}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    style={{ width: "100%", height: "100%", objectFit: "contain" }}
                   />
                 </button>
               ))}
@@ -177,9 +167,7 @@ export default function ProductDetail() {
             {title}
           </h1>
           <p style={{ color: "var(--color-text-secondary)", marginBottom: 14 }}>
-            A clean everyday {category} made for daily carry, quick travel, and
-            polished casual looks. The structured body keeps essentials secure
-            while the soft-touch finish makes it comfortable to use all day.
+            {product?.description || "No description provided."}
           </p>
 
           <div className="hero-stats" style={{ marginTop: 0 }}>
@@ -188,12 +176,12 @@ export default function ProductDetail() {
               <div className="stat-label">Price</div>
             </div>
             <div>
-              <div className="stat-num">4.9 star</div>
-              <div className="stat-label">Rating</div>
+              <div className="stat-num">{product?.brand || "Carryio"}</div>
+              <div className="stat-label">Brand</div>
             </div>
             <div>
-              <div className="stat-num">Free</div>
-              <div className="stat-label">Shipping over Rs. 999</div>
+              <div className="stat-num">{product?.freeShipping ? "Free" : "Standard"}</div>
+              <div className="stat-label">{product?.freeShipping ? "Free shipping included" : "Standard shipping"}</div>
             </div>
           </div>
         </div>
@@ -205,12 +193,11 @@ export default function ProductDetail() {
                 Ready to order
               </div>
               <p className="product-summary">
-                Review the details below, add this item to your cart, or
-                continue browsing more Carryio picks.
+                Review the product specs below and add this item to your cart.
               </p>
 
               <div className="product-specs">
-                {PRODUCT_SPECS.map((spec) => (
+                {productSpecs.map((spec) => (
                   <div className="product-spec" key={spec.label}>
                     <span>{spec.label}</span>
                     <strong>{spec.value}</strong>
@@ -221,11 +208,11 @@ export default function ProductDetail() {
               <div className="product-options">
                 <div>
                   <span>Color</span>
-                  <strong>Classic tan</strong>
+                  <strong>{product?.colorName || (Array.isArray(product?.colors) && product?.colors[0]) || "Standard"}</strong>
                 </div>
                 <div>
                   <span>Size</span>
-                  <strong>Medium</strong>
+                  <strong>{product?.sizes || "Standard"}</strong>
                 </div>
               </div>
 
@@ -247,21 +234,23 @@ export default function ProductDetail() {
                 Buy now
               </button>
 
-              <div className="product-reviews">
-                <div className="product-reviews__top">
-                  <span className="section-title">Customer reviews</span>
-                  <span>4.9 from 128 reviews</span>
-                </div>
-                {CUSTOMER_REVIEWS.map((review) => (
-                  <div className="product-review" key={review.name}>
-                    <div>
-                      <strong>{review.name}</strong>
-                      <span>{review.rating} star</span>
-                    </div>
-                    <p>{review.text}</p>
+              {Array.isArray(product?.reviews) && product.reviews.length > 0 && (
+                <div className="product-reviews">
+                  <div className="product-reviews__top">
+                    <span className="section-title">Customer reviews</span>
+                    <span>{product.reviews.length} reviews</span>
                   </div>
-                ))}
-              </div>
+                  {product.reviews.map((review, idx) => (
+                    <div className="product-review" key={idx}>
+                      <div>
+                        <strong>{review.name}</strong>
+                        <span>{review.rating} star</span>
+                      </div>
+                      <p>{review.text}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </>
           ) : (
             <>

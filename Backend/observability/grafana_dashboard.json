@@ -1,0 +1,53 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Requests Per Second (RPS)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "targets": [{ "expr": "http_requests_per_second" }]
+    },
+    {
+      "title": "API Latency (Avg Seconds)",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "targets": [{ "expr": "http_request_duration_seconds_avg" }]
+    },
+    {
+      "title": "HTTP Error Count",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
+      "targets": [{ "expr": "http_errors_total" }]
+    },
+    {
+      "title": "Cache Hit Rate",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
+      "targets": [{ "expr": "cache_hits_total / (cache_hits_total + cache_misses_total)" }]
+    },
+    {
+      "title": "Database Query Latency",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "targets": [{ "expr": "database_latency_seconds_avg" }]
+    },
+    {
+      "title": "Queue Depth & Payment Failures",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "targets": [
+        { "expr": "queue_depth_gauge", "legendFormat": "Queue Depth" },
+        { "expr": "payment_failures_total", "legendFormat": "Payment Failures" }
+      ]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "title": "Carryio Observability & Telemetry Dashboard"
+}

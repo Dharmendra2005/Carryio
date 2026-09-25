@@ -1,11 +1,36 @@
+function slugifyCategory(categoryName) {
+  if (!categoryName) return "tote";
+  const catLower = categoryName.trim().toLowerCase();
+  const slugMap = {
+    "tote bags": "tote",
+    "tote bag": "tote",
+    "tote": "tote",
+    "backpacks": "backpack",
+    "backpack": "backpack",
+    "wallets": "wallet",
+    "wallet": "wallet",
+    "clutches": "clutch",
+    "clutch": "clutch",
+    "sling bags": "sling",
+    "sling bag": "sling",
+    "sling": "sling",
+    "travel bags": "travel",
+    "travel bag": "travel",
+    "travel": "travel",
+  };
+  return slugMap[catLower] || catLower.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "tote";
+}
+
 export function mapProductForManager(product) {
+  const catSlug = product.cat ? product.cat.toLowerCase() : slugifyCategory(product.category);
+
   return {
-    id: product._id,
-    _id: product._id,
+    id: product._id || product.id,
+    _id: product._id || product.id,
     name: product.name,
-    category: product.category,
-    brand: product.brand,
-    description: product.description,
+    category: product.category || "General",
+    brand: product.brand || "Carryio",
+    description: product.description || "",
     price: Number(product.price || 0),
     mrp: product.mrp ?? null,
     stock: Number(product.stock || 0),
@@ -26,7 +51,7 @@ export function mapProductForManager(product) {
     icon: product.icon || "👜",
     color: product.color || "#D85A30",
     tiIcon: product.tiIcon || "ti-briefcase",
-    cat: product.cat || "bag",
+    cat: catSlug,
     images: product.images || [],
     createdAt: product.createdAt,
   };
