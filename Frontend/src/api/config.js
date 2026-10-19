@@ -1,5 +1,10 @@
 export const API_BASE = "http://localhost:3000";
 
+export function getAuthHeaders() {
+  const token = localStorage.getItem("carryio_token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export async function apiFetch(path, options = {}) {
   const { isFormData, ...restOptions } = options;
 
@@ -10,6 +15,7 @@ export async function apiFetch(path, options = {}) {
       ? (options.headers || {})           // no Content-Type — browser sets it
       : {
           "Content-Type": "application/json",
+          ...getAuthHeaders(),
           ...(options.headers || {}),
         },
   });

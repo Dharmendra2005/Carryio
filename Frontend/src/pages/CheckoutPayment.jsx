@@ -4,6 +4,7 @@ import { useApp } from "../context/AppContext";
 import "../Components/Checkout/Checkout.css";
 import CODPayment from "../Components/PaymentMethod/COD";
 import UPIPayment from "../Components/PaymentMethod/UPI";
+import { getAuthHeaders } from "../api/config";
 
 const PAYMENT_METHODS = [
   {
@@ -66,6 +67,7 @@ export default function CheckoutPayment() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...getAuthHeaders(),
         },
         credentials: "include",
         body: JSON.stringify({
@@ -113,6 +115,7 @@ export default function CheckoutPayment() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            ...getAuthHeaders(),
           },
           body: JSON.stringify({
             amount: amountPayable,
@@ -134,6 +137,7 @@ export default function CheckoutPayment() {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
+                  ...getAuthHeaders(),
                 },
                 credentials: "include",
                 body: JSON.stringify({

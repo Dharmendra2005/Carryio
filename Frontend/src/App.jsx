@@ -14,6 +14,7 @@ import AllProducts from "./pages/AllProducts";
 import TrackingPage from "./Components/Tracking/TrackingPage";
 import DeliveryAgentDashboard from "./Components/Tracking/DeliveryAgentDashboard";
 import AdminShipmentManager from "./Components/Tracking/AdminShipmentManager";
+import Orders from "./pages/Orders";
 import { fetchStoreProducts } from "./api/products";
 
 const CATEGORIES = [
@@ -252,7 +253,14 @@ function App() {
                   <button type="button" className="nav-user-item">
                     Profile
                   </button>
-                  <button type="button" className="nav-user-item">
+                  <button
+                    type="button"
+                    className="nav-user-item"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate("/orders");
+                    }}
+                  >
                     Orders
                   </button>
                   <button type="button" className="nav-user-item">
@@ -317,7 +325,9 @@ function App() {
           />
         </div>
       ) : location.pathname === "/track" ? (
-        <TrackingPage />
+        <TrackingPage initialQuery={location.state?.trackingQuery || ""} />
+      ) : location.pathname === "/orders" ? (
+        <Orders />
       ) : location.pathname === "/agent-dashboard" ? (
         <DeliveryAgentDashboard user={user} />
       ) : location.pathname === "/admin-shipments" ? (

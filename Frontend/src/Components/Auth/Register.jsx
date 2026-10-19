@@ -72,6 +72,11 @@ export default function Register({ onSwitchToLogin, onAuthSuccess }) {
       }
 
       const userData = resData.data?.user || resData.user || {};
+      const token = resData.data?.token || resData.token;
+
+      if (token) {
+        localStorage.setItem("carryio_token", token);
+      }
 
       alert("Account created successfully!");
       onSwitchToLogin();
@@ -81,6 +86,7 @@ export default function Register({ onSwitchToLogin, onAuthSuccess }) {
         name:
           `${firstName} ${lastName}`.trim() || email.split("@")[0] || "User",
         email,
+        token,
         rememberMe: true,
       });
 

@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import "./Cart.css";
 import LoginGateModal from "../LoginGateModal/LoginGateModal";
+import { getAuthHeaders } from "../../api/config";
 
 function getItemTotal(item) {
   const amount = String(item.price || "").replace(/[^0-9]/g, "");
@@ -22,9 +23,15 @@ export default function Cart({ items, onIncrease, onDecrease, onRemove }) {
   const handleCheckout = async (e) => {
     e.preventDefault();
 
+    if (!localStorage.getItem("carryio_token")) {
+      setShowLogin(true);
+      return;
+    }
+
     try {
       const response = await fetch("http://localhost:3000/addresses", {
         credentials: "include",
+        headers: getAuthHeaders(),
       });
       console.log("Auth check response:", response);
 

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useApp } from "../context/AppContext";
 import LoginGateModal from "../Components/LoginGateModal/LoginGateModal";
 import "../Components/Cart/Cart.css";
+import { getAuthHeaders } from "../api/config";
 
 function getItemTotal(item) {
   const amount = String(item.price || "").replace(/[^0-9]/g, "");
@@ -29,9 +30,15 @@ export default function Cart() {
   const handleCheckout = async (e) => {
     e.preventDefault();
 
+    if (!localStorage.getItem("carryio_token")) {
+      setShowLogin(true);
+      return;
+    }
+
     try {
       const response = await fetch("http://localhost:3000/addresses", {
         credentials: "include",
+        headers: getAuthHeaders(),
       });
 
       if (!response.ok) {

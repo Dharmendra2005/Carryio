@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../Components/Checkout/Checkout.css";
+import { getAuthHeaders } from "../api/config";
 
 const DEFAULT_ADDRESS = {
   fullName: "Aarav Mehta",
@@ -64,6 +65,7 @@ export default function CheckoutAddress() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...getAuthHeaders(),
         },
         credentials: "include",
         body: JSON.stringify({
